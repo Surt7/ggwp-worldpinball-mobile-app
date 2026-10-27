@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../shared/config/api_config.dart';
+import '../../auth/data/auth_repository.dart';
 
 class ProfileRepository {
+  final AuthRepository _authRepository = AuthRepository();
+
   /// Fetches real user profiles from HotChocolate GraphQL API via BFF Gateway
   Future<Map<String, dynamic>?> getUserProfile() async {
     const query = '''
@@ -16,9 +19,13 @@ class ProfileRepository {
       }
     ''';
 
+    final authHeaders = await _authRepository.getAuthHeaders();
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders,
+      },
       body: jsonEncode({'query': query}),
     );
 

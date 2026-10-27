@@ -12,6 +12,7 @@ import 'src/features/machines/bloc/machines_event.dart';
 import 'src/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'src/features/qr_code/presentation/qr_pass_screen.dart';
 import 'src/features/scores/presentation/scores_screen.dart';
+import 'src/features/auth/data/auth_repository.dart';
 
 void main() {
   // In debug mode, verify certificates using the local WorldPinball Root CA and handle emulator routing.
@@ -58,11 +59,14 @@ class MainNavigationScreen extends StatelessWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Déconnecté avec succès.')),
-              );
+            onPressed: () async {
+              await AuthRepository().logout();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),
+                );
+              }
             },
             child: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
           ),

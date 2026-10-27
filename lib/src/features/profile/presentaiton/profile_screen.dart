@@ -1,10 +1,67 @@
 import 'package:flutter/material.dart';
+import '../../auth/data/auth_repository.dart';
+import '../../auth/presentation/widgets/login_modal.dart';
 import '../data/profile_repository.dart';
 import 'widgets/add_machine_modal.dart';
 
-/// User Profile screen displaying real profile info from WorldPinball backend.
-class ProfileScreen extends StatelessWidget {
+/// User Profile screen displaying real profile info from WorldPinball backend and Keycloak Auth state.
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final _profileRepository = ProfileRepository();
+  final _authRepository = AuthRepository();
+
+  bool _isLoggedIn = false;
+  String? _username;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthState();
+  }
+
+  Future<void> _checkAuthState() async {
+    final loggedIn = await _authRepository.isLoggedIn();
+    final username = await _authRepository.getUsername();
+    if (mounted) {
+      setState(() {
+        _isLoggedIn = loggedIn;
+        _username = username;
+      });
+    }
+  }
+
+  void _openLoginModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => LoginModal(
+        onLoginSuccess: () {
+          _checkAuthState();
+          setState(() {});
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleLogout() async {
+    await _authRepository.logout();
+    await _checkAuthState();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),
+      );
+    }
+  }
 
   void _openAddMachineModal(BuildContext context) {
     showModalBottomSheet(
@@ -20,10 +77,8 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repository = ProfileRepository();
-
     return FutureBuilder<Map<String, dynamic>?>(
-      future: repository.getUserProfile(),
+      future: _profileRepository.getUserProfile(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -54,6 +109,73 @@ class ProfileScreen extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
+            // Keycloak Auth Status Banner
+            Card(
+              color: _isLoggedIn ? const Color(0xFF1B382B) : const Color(0xFF2C2416),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: _isLoggedIn ? Colors.green.shade600 : Colors.amber.shade700,
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isLoggedIn ? Icons.verified_user : Icons.lock_outline,
+                      color: _isLoggedIn ? Colors.greenAccent : Colors.amberAccent,
+                      size: 26,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isLoggedIn
+                                ? 'Keycloak IAM : Connecté'
+                                : 'Keycloak IAM : Non authentifié',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: _isLoggedIn ? Colors.greenAccent : Colors.amberAccent,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            _isLoggedIn
+                                ? 'Compte : ${_username ?? "player1"} (Token JWT actif)'
+                                : 'Connectez-vous pour réclamer et activer vos flippers',
+                            style: TextStyle(
+                              color: Colors.grey.shade300,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!_isLoggedIn)
+                      TextButton(
+                        onPressed: () => _openLoginModal(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFFE53935),
+                          backgroundColor: Colors.white10,
+                        ),
+                        child: const Text('LOGIN', style: TextStyle(fontWeight: FontWeight.bold)),
+                      )
+                    else
+                      IconButton(
+                        icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
+                        tooltip: 'Déconnexion Keycloak',
+                        onPressed: _handleLogout,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             // User Header Card
             Card(
               color: const Color(0xFF1E1E1E),
@@ -147,7 +269,10 @@ class ProfileScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-              label: const Text('ENREGISTRER UN FLIPPER', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              label: const Text(
+                'ENREGISTRER UN FLIPPER',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
             ),
           ],
         );
