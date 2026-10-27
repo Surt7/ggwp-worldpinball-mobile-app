@@ -1,18 +1,28 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../shared/config/api_config.dart';
 
-/// Production Repository fetching personal user scores from C# Hot Chocolate GraphQL API.
 class ScoresRepository {
-  final String _graphqlUrl = 'https://api.worldpinball.local/graphql';
-
-  Future<List<Map<String, dynamic>>> getMyScores(String userId) async {
-    // GraphQL Query with HotChocolate filtering
-    const query = '''
+  Future<List<Map<String, dynamic>>> getMyScores({String? userId}) async {
+    final String query = (userId != null && userId.isNotEmpty)
+        ? '''
       query GetMyScores(\$userId: String!) {
-        scores(where: { userProfileId: { eq: \$userId } }, order: { scoreValue: DESC }) {
-          id
-          scoreValue
-          createdAt
+        scores(where: { userId: { eq: \$userId } }, order: { achievedAtUtc: DESC }) {
+          scoreEntryId
+          score
+          achievedAtUtc
+          machine {
+            displayName
+          }
+        }
+      }
+    '''
+        : '''
+      query {
+        scores(order: { achievedAtUtc: DESC }) {
+          scoreEntryId
+          score
+          achievedAtUtc
           machine {
             displayName
           }
@@ -21,11 +31,11 @@ class ScoresRepository {
     ''';
 
     final response = await http.post(
-      Uri.parse(_graphqlUrl),
+      Uri.parse(ApiConfig.graphqlUrl),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'query': query,
-        'variables': {'userId': userId},
+        if (userId != null && userId.isNotEmpty) 'variables': {'userId': userId},
       }),
     );
 
@@ -40,13 +50,34 @@ class ScoresRepository {
 
       return scoresJson.map((json) {
         return {
-          'machine': json['machine']?['displayName'] ?? 'Unknown Machine',
-          'score': json['scoreValue']?.toString() ?? '0',
-          'date': json['createdAt']?.toString() ?? 'Recent',
+          'machine': json['machine']?['displayName']?.toString() ?? 'Flipper WorldPinball',
+          'score': _formatScore(json['score']),
+          'date': _formatDate(json['achievedAtUtc']),
         };
       }).toList();
     } else {
-      throw Exception('Server error: ${response.statusCode}');
+      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  static String _formatScore(dynamic val) {
+    if (val == null) return '0';
+    if (val is num) {
+      return val.toString().replaceAllMapped(
+            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+            (Match m) => '${m[1]},',
+          );
+    }
+    return val.toString();
+  }
+
+  static String _formatDate(dynamic val) {
+    if (val == null) return 'Date inconnue';
+    try {
+      final dt = DateTime.parse(val.toString()).toLocal();
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return val.toString();
     }
   }
 }

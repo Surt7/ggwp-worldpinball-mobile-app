@@ -1,15 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../shared/config/api_config.dart';
 
-/// Production Repository handling User Profile GraphQL queries and Machine registration mutations.
 class ProfileRepository {
-  final String _graphqlUrl = 'https://api.worldpinball.local/graphql';
-
-  /// Fetches the user profile from GraphQL
-  Future<Map<String, dynamic>> getUserProfile(String userId) async {
+  /// Fetches real user profiles from HotChocolate GraphQL API via BFF Gateway
+  Future<Map<String, dynamic>?> getUserProfile() async {
     const query = '''
-      query GetProfile(\$userId: String!) {
-        profiles(where: { userId: { eq: \$userId } }) {
+      query {
+        profiles {
           userId
           displayName
           countryCode
@@ -19,61 +17,43 @@ class ProfileRepository {
     ''';
 
     final response = await http.post(
-      Uri.parse(_graphqlUrl),
+      Uri.parse(ApiConfig.graphqlUrl),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'query': query,
-        'variables': {'userId': userId},
-      }),
+      body: jsonEncode({'query': query}),
     );
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> body = jsonDecode(response.body);
-      final List<dynamic> profiles = body['data']['profiles'] ?? [];
+      if (body.containsKey('errors')) {
+        throw Exception(body['errors'][0]['message']);
+      }
+      final List<dynamic> profiles = body['data']?['profiles'] ?? [];
       if (profiles.isNotEmpty) {
         return profiles.first as Map<String, dynamic>;
       }
-      throw Exception('Profile not found');
+      return null;
     } else {
-      throw Exception('Server error: ${response.statusCode}');
+      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
     }
   }
 
-  /// Sends a GraphQL Mutation to register a new pinball machine
+  /// Registers a machine on the backend through the BFF Gateway
   Future<bool> registerMachine({
     required String displayName,
     required String manufacturer,
     required String serialNumber,
   }) async {
-    const mutation = '''
-      mutation RegisterMachine(\$displayName: String!, \$manufacturer: String!, \$serialNumber: String!) {
-        addMachine(input: {
-          displayName: \$displayName,
-          manufacturer: \$manufacturer,
-          serialNumber: \$serialNumber
-        }) {
-          machineId
-        }
-      }
-    ''';
-
+    final url = Uri.parse('https://bff.worldpinball.local/api/v1/machines/enroll');
     final response = await http.post(
-      Uri.parse(_graphqlUrl),
+      url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'query': mutation,
-        'variables': {
-          'displayName': displayName,
-          'manufacturer': manufacturer,
-          'serialNumber': serialNumber,
-        },
+        'deviceSerialNumber': serialNumber,
+        'machineName': displayName,
+        'manufacturer': manufacturer,
       }),
     );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> body = jsonDecode(response.body);
-      return !body.containsKey('errors');
-    }
-    return false;
+    return response.statusCode == 200 || response.statusCode == 201;
   }
 }

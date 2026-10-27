@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/scores_repository.dart';
 
-/// Screen displaying the logged-in player's personal games history & stats from GraphQL API.
+/// Screen displaying the real games history & stats from WorldPinball GraphQL API.
 class ScoresScreen extends StatelessWidget {
   const ScoresScreen({super.key});
 
@@ -26,7 +26,7 @@ class ScoresScreen extends StatelessWidget {
     final repository = ScoresRepository();
 
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: repository.getMyScores('user_123'),
+      future: repository.getMyScores(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -37,7 +37,7 @@ class ScoresScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                'GraphQL Error: ${snapshot.error}',
+                'Erreur API: ${snapshot.error}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.red),
               ),
@@ -50,7 +50,7 @@ class ScoresScreen extends StatelessWidget {
         if (games.isEmpty) {
           return const Center(
             child: Text(
-              'No games recorded yet.\nScan a pinball machine to log your first score!',
+              'Aucune partie enregistrée sur l\'API.\nScannez un flipper pour enregistrer votre premier score !',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -68,9 +68,13 @@ class ScoresScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatItem('TOTAL GAMES', '${games.length}', Colors.white),
+                    _buildStatItem('TOTAL PARTIES', '${games.length}', Colors.white),
                     Container(width: 1, height: 40, color: Colors.grey.shade800),
-                    _buildStatItem('BEST SCORE', games.first['score'].toString(), Theme.of(context).colorScheme.primary),
+                    _buildStatItem(
+                      'MEILLEUR SCORE',
+                      games.first['score'].toString(),
+                      Theme.of(context).colorScheme.primary,
+                    ),
                   ],
                 ),
               ),
@@ -78,18 +82,21 @@ class ScoresScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             const Text(
-              'RECENT GAMES HISTORY',
+              'HISTORIQUE RÉCENT',
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1.1),
             ),
             const SizedBox(height: 8),
 
-            // Real GraphQL Games List
+            // Games List
             ...games.map((game) {
               return Card(
                 margin: const EdgeInsets.only(bottom: 8.0),
                 color: const Color(0xFF1E1E1E),
                 child: ListTile(
-                  leading: const Icon(Icons.sports_esports, color: Color(0xFFE53935)),
+                  leading: const Icon(
+                    Icons.sports_esports,
+                    color: Color(0xFFE53935),
+                  ),
                   title: Text(
                     game['machine'].toString(),
                     style: const TextStyle(fontWeight: FontWeight.bold),

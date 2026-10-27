@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:world_pinball_gg_wp/src/features/machines/presentation/machines_screen.dart';
 import 'package:world_pinball_gg_wp/src/features/profile/presentaiton/profile_screen.dart';
+import 'package:world_pinball_gg_wp/src/shared/config/security_config.dart';
 import 'package:world_pinball_gg_wp/src/shared/theme/app_theme.dart';
 import 'src/features/machines/data/machine_repository.dart';
 import 'src/features/machines/bloc/machines_bloc.dart';
@@ -11,6 +14,13 @@ import 'src/features/qr_code/presentation/qr_pass_screen.dart';
 import 'src/features/scores/presentation/scores_screen.dart';
 
 void main() {
+  // In debug mode, verify certificates using the local WorldPinball Root CA and handle emulator routing.
+  // In release mode (production), the OS natively validates the public TLS certificate.
+  if (kDebugMode) {
+    final securityContext = SecurityConfig.createSecurityContext();
+    HttpOverrides.global = WorldPinballHttpOverrides(securityContext);
+  }
+
   runApp(const MyApp());
 }
 
@@ -21,6 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'World Pinball',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: BlocProvider(
         create: (context) => MachinesBloc(MachineRepository())..add(LoadMachinesEvent()),

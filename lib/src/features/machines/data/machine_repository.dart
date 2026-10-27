@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../shared/config/api_config.dart';
 import '../domain/machine.dart';
 
 class MachineRepository {
-  final String _graphqlUrl = 'https://api.worldpinball.local/graphql';
-
   Future<List<Machine>> getMachines() async {
     const query = '''
       query {
@@ -13,50 +12,26 @@ class MachineRepository {
           displayName
           manufacturer
           status
-          serialNumber
+          worldPinballSerialNumber
         }
       }
     ''';
 
-    try {
-      final response = await http.post(
-        Uri.parse(_graphqlUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'query': query}),
-      ).timeout(const Duration(seconds: 4));
+    final response = await http.post(
+      Uri.parse(ApiConfig.graphqlUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'query': query}),
+    );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> body = jsonDecode(response.body);
-        final List<dynamic> machinesJson = body['data']['machines'];
-        return machinesJson.map((json) => Machine.fromJson(json)).toList();
-      } else {
-        return _getMockMachines();
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+      if (body.containsKey('errors')) {
+        throw Exception(body['errors'][0]['message']);
       }
-    } catch (_) {
-      return _getMockMachines();
+      final List<dynamic> machinesJson = body['data']['machines'] ?? [];
+      return machinesJson.map((json) => Machine.fromJson(json)).toList();
+    } else {
+      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
     }
-  }
-
-  List<Machine> _getMockMachines() {
-    return [
-      Machine(
-        machineId: '1',
-        ipId: 're-death-island',
-        displayName: 'Resident Evil: Death Island',
-        serialNumber: 'SN-RE-001',
-        manufacturer: 'WorldPinball',
-        status: 'Online',
-        registeredAt: DateTime.now(),
-      ),
-      Machine(
-        machineId: '2',
-        ipId: 'godzilla',
-        displayName: 'Godzilla Premium',
-        serialNumber: 'SN-GZ-042',
-        manufacturer: 'Stern Pinball',
-        status: 'Offline',
-        registeredAt: DateTime.now(),
-      ),
-    ];
   }
 }

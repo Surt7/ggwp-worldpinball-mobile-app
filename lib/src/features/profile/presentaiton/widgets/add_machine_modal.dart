@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../data/profile_repository.dart';
 
-/// Modal bottom sheet form for pinball owners to register a new machine to their fleet.
 class AddMachineModal extends StatefulWidget {
   const AddMachineModal({super.key});
 
@@ -13,6 +13,7 @@ class _AddMachineModalState extends State<AddMachineModal> {
   final _nameController = TextEditingController();
   final _manufacturerController = TextEditingController(text: 'Stern Pinball');
   final _activationCodeController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -22,16 +23,56 @@ class _AddMachineModalState extends State<AddMachineModal> {
     super.dispose();
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Validated! Will trigger a GraphQL Mutation (addMachine)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Registering ${_nameController.text}...'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final repository = ProfileRepository();
+        final success = await repository.registerMachine(
+          displayName: _nameController.text.trim(),
+          manufacturer: _manufacturerController.text.trim(),
+          serialNumber: _activationCodeController.text.trim(),
+        );
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+
+          if (success) {
+            Navigator.pop(context, true);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Flipper "${_nameController.text.trim()}" activé avec succès !'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Échec de l\'activation. Veuillez vérifier la clé.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -39,14 +80,14 @@ class _AddMachineModalState extends State<AddMachineModal> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom, // Keyboard offset
+        bottom: MediaQuery.of(context).viewInsets.bottom,
         left: 20,
         right: 20,
         top: 20,
       ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
+      child: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,8 +96,11 @@ class _AddMachineModalState extends State<AddMachineModal> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'ADD A PINBALL MACHINE',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    'AJOUTER UN FLIPPER',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -66,57 +110,74 @@ class _AddMachineModalState extends State<AddMachineModal> {
               ),
               const Divider(),
               const SizedBox(height: 12),
-
-              // Machine Name
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
-                  labelText: 'Machine Name',
-                  hintText: 'e.g., Godzilla Premium',
+                  labelText: 'Nom du flipper (ex: Godzilla Premium)',
                   prefixIcon: Icon(Icons.sports_esports),
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Required field' : null,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return 'Champ obligatoire';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
-
-              // Manufacturer
               TextFormField(
                 controller: _manufacturerController,
                 decoration: const InputDecoration(
-                  labelText: 'Manufacturer',
+                  labelText: 'Fabricant (ex: Stern, Jersey Jack)',
                   prefixIcon: Icon(Icons.factory),
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Required field' : null,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return 'Champ obligatoire';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
-
-              // Activation Key
               TextFormField(
                 controller: _activationCodeController,
                 decoration: const InputDecoration(
-                  labelText: 'Activation Code / Key',
-                  hintText: 'e.g., WP-9982-X',
+                  labelText: 'Numéro de série / Clé d\'activation',
                   prefixIcon: Icon(Icons.vpn_key),
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => val == null || val.trim().isEmpty ? 'Required field' : null,
+                validator: (val) {
+                  if (val == null || val.trim().isEmpty) {
+                    return 'Champ obligatoire';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 20),
-
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _submitForm,
+                  onPressed: _isLoading ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('REGISTER MACHINE', style: TextStyle(fontWeight: FontWeight.bold)),
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.add_circle_outline),
+                  label: Text(
+                    _isLoading ? 'ACTIVATION EN COURS...' : 'ENREGISTRER LE FLIPPER',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
