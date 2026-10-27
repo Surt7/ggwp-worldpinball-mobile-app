@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:world_pinball_gg_wp/src/features/machines/presentation/machines_screen.dart';
+import 'package:world_pinball_gg_wp/src/features/profile/presentaiton/profile_screen.dart';
 import 'package:world_pinball_gg_wp/src/shared/theme/app_theme.dart';
 import 'src/features/machines/data/machine_repository.dart';
 import 'src/features/machines/bloc/machines_bloc.dart';
 import 'src/features/machines/bloc/machines_event.dart';
+import 'src/features/leaderboard/presentation/LeaderboardScreen.dart';
+import 'src/features/qr_code/presentation/qr_pass_screen.dart';
+import 'src/features/scores/presentation/scores_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,7 +36,7 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 5,
+      length: 4,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.black,
@@ -43,7 +47,6 @@ class MainNavigationScreen extends StatelessWidget {
             indicatorColor: Color(0xFFE53935),
             indicatorSize: TabBarIndicatorSize.tab,
             tabs: [
-              Tab(icon: Icon(Icons.newspaper), text: 'News'),
               Tab(icon: Icon(Icons.leaderboard), text: 'Scores'),
               Tab(icon: Icon(Icons.videogame_asset), text: 'Machines'),
               Tab(icon: Icon(Icons.emoji_events), text: 'Leaderboard'),
@@ -53,11 +56,10 @@ class MainNavigationScreen extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            Center(child: Text('News')),
-            Center(child: Text('Scores Screen')),
-            MachinesScreen(), // Clean & Modular!
-            Center(child: Text('Leaderboard Screen')),
-            Center(child: Text('Profile Screen')),
+            ScoresScreen(),
+            MachinesScreen(), 
+            LeaderboardScreen(),
+            ProfileScreen(),
           ],
         ),
         bottomNavigationBar: Container(
@@ -73,7 +75,11 @@ class MainNavigationScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Quick action: Open full screen QR Pass
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (context) => const QrPassScreen(),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE53935),

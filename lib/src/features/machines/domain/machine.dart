@@ -19,6 +19,20 @@ required this.status,
 required this.registeredAt,
 });
 
+factory Machine.fromJson(Map<String, dynamic> json) {
+  return Machine(
+    machineId: json['machineId']?.toString() ?? '',
+    ipId: json['ipId']?.toString() ?? '',
+    displayName: json['displayName']?.toString() ?? '',
+    serialNumber: json['serialNumber']?.toString() ?? '',
+    manufacturer: json['manufacturer']?.toString() ?? 'Stern Pinball',
+    status: json['status']?.toString() ?? 'Online',
+    registeredAt: json['registeredAt'] != null
+        ? DateTime.parse(json['registeredAt'].toString())
+        : DateTime.now(),
+  );
+}
+
   @override
   // Equatable uses 'props' to compare objects. 
   // It helps Flutter know when to rebuild the UI.

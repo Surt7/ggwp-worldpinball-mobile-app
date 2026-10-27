@@ -1,14 +1,43 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../domain/machine.dart';
 
-/// Repository responsible for fetching Machine data.
-/// This acts as an abstraction layer between the BLoC and the Data Source (API/Local DB).
 class MachineRepository {
-  /// Fetches the list of pinball machines.
-  /// Currently using mocked data with a simulated network delay.
-  Future<List<Machine>> getMachines() async {
-    // Simulate a network delay (1 second).
-    await Future.delayed(const Duration(seconds: 1));
+  final String _graphqlUrl = 'http://api.worldpinball.local/graphql';
 
+  Future<List<Machine>> getMachines() async {
+    const query = '''
+      query {
+        machines {
+          machineId
+          displayName
+          manufacturer
+          status
+          serialNumber
+        }
+      }
+    ''';
+
+    try {
+      final response = await http.post(
+        Uri.parse(_graphqlUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'query': query}),
+      ).timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> body = jsonDecode(response.body);
+        final List<dynamic> machinesJson = body['data']['machines'];
+        return machinesJson.map((json) => Machine.fromJson(json)).toList();
+      } else {
+        return _getMockMachines();
+      }
+    } catch (_) {
+      return _getMockMachines();
+    }
+  }
+
+  List<Machine> _getMockMachines() {
     return [
       Machine(
         machineId: '1',
