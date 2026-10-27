@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../domain/machine.dart';
 
 class MachineRepository {
-  final String _graphqlUrl = 'http://api.worldpinball.local/graphql';
+  final String _graphqlUrl = 'https://api.worldpinball.local/graphql';
 
   Future<List<Machine>> getMachines() async {
     const query = '''

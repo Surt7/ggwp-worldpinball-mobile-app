@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+
 class LeaderboardRepository {
-  final String _graphqlUrl = 'http://api.worldpinball.local/graphql';
+  final String _graphqlUrl = 'https://api.worldpinball.local/graphql';
 
   Future<List<Map<String, dynamic>>> getLeaderboard() async {
     const query = '''

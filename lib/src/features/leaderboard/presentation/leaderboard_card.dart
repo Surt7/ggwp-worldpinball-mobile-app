@@ -22,7 +22,7 @@ class LeaderboardCard extends StatelessWidget {
       child: ListTile(
         // Left side: Rank badge (#1, #2, #3)
         leading: CircleAvatar(
-          backgroundColor: rankColor.withOpacity(0.2),
+          backgroundColor: rankColor.withValues(alpha: 0.2),
           child: Text(
             '#$rank',
             style: TextStyle(

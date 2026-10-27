@@ -6,7 +6,7 @@ import 'package:world_pinball_gg_wp/src/shared/theme/app_theme.dart';
 import 'src/features/machines/data/machine_repository.dart';
 import 'src/features/machines/bloc/machines_bloc.dart';
 import 'src/features/machines/bloc/machines_event.dart';
-import 'src/features/leaderboard/presentation/LeaderboardScreen.dart';
+import 'src/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'src/features/qr_code/presentation/qr_pass_screen.dart';
 import 'src/features/scores/presentation/scores_screen.dart';
 
@@ -33,6 +33,71 @@ class MyApp extends StatelessWidget {
 class MainNavigationScreen extends StatelessWidget {
   const MainNavigationScreen({super.key});
 
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Déconnecté avec succès.')),
+              );
+            },
+            child: const Text('Déconnexion', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettingsModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('PARAMÈTRES', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.language, color: Colors.white),
+              title: const Text('Langue'),
+              trailing: const Text('Français 🇫🇷', style: TextStyle(color: Colors.grey)),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.dark_mode, color: Colors.white),
+              title: const Text('Thème'),
+              trailing: const Text('Sombre (Red Pinball)', style: TextStyle(color: Colors.grey)),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.white),
+              title: const Text('Version de l\'application'),
+              trailing: const Text('1.0.0 (V1)', style: TextStyle(color: Colors.grey)),
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -57,7 +122,7 @@ class MainNavigationScreen extends StatelessWidget {
         body: const TabBarView(
           children: [
             ScoresScreen(),
-            MachinesScreen(), 
+            MachinesScreen(),
             LeaderboardScreen(),
             ProfileScreen(),
           ],
@@ -70,7 +135,7 @@ class MainNavigationScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.grey),
-                  onPressed: () {},
+                  onPressed: () => _showLogoutDialog(context),
                 ),
                 Expanded(
                   child: ElevatedButton.icon(
@@ -102,7 +167,7 @@ class MainNavigationScreen extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {},
+                  onPressed: () => _showSettingsModal(context),
                 ),
               ],
             ),
