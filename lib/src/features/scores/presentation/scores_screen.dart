@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/game_mode_filter_bar.dart';
 import '../data/scores_repository.dart';
+import '../../games/data/game_session_repository.dart';
+import 'widgets/active_session_card.dart';
 
 /// Screen displaying personal scores with real aggregate stats and lazy-loaded paginated list.
 class ScoresScreen extends StatefulWidget {
@@ -16,6 +18,10 @@ class _ScoresScreenState extends State<ScoresScreen> {
 
   String _selectedModeId = 'all';
   String _selectedLicense = 'Resident Evil: Death Island';
+
+  // Active game session (null if player has no active game)
+  final _sessionRepository = GameSessionRepository();
+  Map<String, dynamic>? _activeSession;
 
   // Stats
   Map<String, dynamic>? _stats;
@@ -42,7 +48,8 @@ class _ScoresScreenState extends State<ScoresScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       if (!_isLoadingGames && _hasMore) {
         _loadMoreGames();
       }
@@ -59,21 +66,28 @@ class _ScoresScreenState extends State<ScoresScreen> {
     });
 
     try {
-      final statsFuture = _repository.getMyScoreStats(modeCode: _selectedModeId);
+      final statsFuture = _repository.getMyScoreStats(
+        modeCode: _selectedModeId,
+      );
       final gamesFuture = _repository.getMyScores(
         skip: 0,
         take: _pageSize,
         modeCode: _selectedModeId,
       );
 
+      final sessionFuture = _sessionRepository.getMyActiveSession();
+
       final stats = await statsFuture;
       final games = await gamesFuture;
+
+      final session = await sessionFuture;
 
       if (!mounted) return;
       setState(() {
         _stats = stats;
         _isLoadingStats = false;
         _games.addAll(games);
+        _activeSession = session;
         _isLoadingGames = false;
         _currentSkip = games.length;
         _hasMore = games.length >= _pageSize;
@@ -116,12 +130,20 @@ class _ScoresScreenState extends State<ScoresScreen> {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: valueColor),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontSize: 10,
+            color: Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
@@ -129,8 +151,10 @@ class _ScoresScreenState extends State<ScoresScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final totalCount = _stats?['totalGames']?.toString() ?? (_isLoadingStats ? '...' : '0');
-    final bestScore = _stats?['bestScore']?.toString() ?? (_isLoadingStats ? '...' : '-');
+    final totalCount =
+        _stats?['totalGames']?.toString() ?? (_isLoadingStats ? '...' : '0');
+    final bestScore =
+        _stats?['bestScore']?.toString() ?? (_isLoadingStats ? '...' : '-');
 
     return RefreshIndicator(
       color: const Color(0xFFE53935),
@@ -139,7 +163,8 @@ class _ScoresScreenState extends State<ScoresScreen> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.all(16.0),
-        itemCount: _games.length + 4, // Header, Stats, Section Title, [Games...], Loading/End
+        itemCount: _games.length + 4,
+        // Header, Stats, Section Title, [Games...], Loading/End
         itemBuilder: (context, index) {
           // 0. Filter Bar
           if (index == 0) {
@@ -159,10 +184,14 @@ class _ScoresScreenState extends State<ScoresScreen> {
             );
           }
 
-          // 1. Stats Summary Banner
+          // 1. Live Active Session Banner (if any) + Stats Summary Banner
           if (index == 1) {
             return Column(
               children: [
+                if (_activeSession != null) ...[
+                  ActiveSessionCard(session: _activeSession!),
+                  const SizedBox(height: 14),
+                ],
                 Card(
                   color: const Color(0xFF1E1E1E),
                   child: Padding(
@@ -170,8 +199,16 @@ class _ScoresScreenState extends State<ScoresScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStatItem('TOTAL PARTIES', totalCount, Colors.white),
-                        Container(width: 1, height: 40, color: Colors.grey.shade800),
+                        _buildStatItem(
+                          'TOTAL PARTIES',
+                          totalCount,
+                          Colors.white,
+                        ),
+                        Container(
+                          width: 1,
+                          height: 40,
+                          color: Colors.grey.shade800,
+                        ),
                         _buildStatItem(
                           'MEILLEUR SCORE',
                           bestScore,
@@ -222,13 +259,19 @@ class _ScoresScreenState extends State<ScoresScreen> {
               return const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24.0),
                 child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFE53935), strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFE53935),
+                    strokeWidth: 2,
+                  ),
                 ),
               );
             }
             if (_games.isEmpty && !_isLoadingStats) {
               return Container(
-                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 20,
+                ),
                 child: Center(
                   child: Column(
                     children: [
@@ -241,7 +284,10 @@ class _ScoresScreenState extends State<ScoresScreen> {
                       Text(
                         'Aucune partie enregistrée en mode ${_selectedModeName()}.',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -277,7 +323,10 @@ class _ScoresScreenState extends State<ScoresScreen> {
               ),
               title: Text(
                 game['machine'].toString(),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               subtitle: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
@@ -289,14 +338,20 @@ class _ScoresScreenState extends State<ScoresScreen> {
                   ),
                   if (modeName != null && modeName.isNotEmpty)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 1,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         modeName,
-                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                 ],
@@ -320,7 +375,11 @@ class _ScoresScreenState extends State<ScoresScreen> {
   String _selectedModeName() {
     final mode = kGameModes.firstWhere(
       (m) => m.id == _selectedModeId,
-      orElse: () => const GameModeItem(id: 'all', label: 'Tous', icon: Icons.sports_esports),
+      orElse: () => const GameModeItem(
+        id: 'all',
+        label: 'Tous',
+        icon: Icons.sports_esports,
+      ),
     );
     return mode.label;
   }
