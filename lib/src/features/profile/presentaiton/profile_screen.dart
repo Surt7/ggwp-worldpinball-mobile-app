@@ -5,7 +5,6 @@ import '../../auth/presentation/widgets/login_modal.dart';
 import '../../machines/bloc/machines_bloc.dart';
 import '../../machines/bloc/machines_event.dart';
 import '../data/profile_repository.dart';
-import 'widgets/add_machine_modal.dart';
 
 /// User Profile screen displaying real profile info from WorldPinball backend and Keycloak Auth state.
 class ProfileScreen extends StatefulWidget {
@@ -71,18 +70,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _openAddMachineModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => const AddMachineModal(),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>?>(
@@ -102,9 +89,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text('Erreur API: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () => _openAddMachineModal(context),
-                    icon: const Icon(Icons.add_circle),
-                    label: const Text('ENREGISTRER UN FLIPPER'),
+                    onPressed: () => setState(() {}),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('RÉESSAYER'),
                   ),
                 ],
               ),
@@ -262,24 +249,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Action: Add Machine Button (Owner Feature)
-            ElevatedButton.icon(
-              onPressed: () => _openAddMachineModal(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E1E1E),
-                foregroundColor: Colors.white,
-                side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              icon: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-              label: const Text(
-                'ENREGISTRER UN FLIPPER',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ),
           ],
