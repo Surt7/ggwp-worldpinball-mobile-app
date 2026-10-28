@@ -1,25 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../shared/config/api_config.dart';
+import '../../auth/data/auth_repository.dart';
 
 class ScoresRepository {
-  Future<List<Map<String, dynamic>>> getMyScores({String? userId}) async {
-    final String query = (userId != null && userId.isNotEmpty)
-        ? '''
-      query GetMyScores(\$userId: String!) {
-        scores(where: { userId: { eq: \$userId } }, order: { achievedAtUtc: DESC }) {
-          scoreEntryId
-          score
-          achievedAtUtc
-          machine {
-            displayName
-          }
-        }
-      }
-    '''
-        : '''
+  final AuthRepository _authRepository = AuthRepository();
+
+  /// Fetches the authenticated player's personal scores from GraphQL API
+  Future<List<Map<String, dynamic>>> getMyScores() async {
+    const query = '''
       query {
-        scores(order: { achievedAtUtc: DESC }) {
+        myScores(order: { achievedAtUtc: DESC }) {
           scoreEntryId
           score
           achievedAtUtc
@@ -30,13 +21,15 @@ class ScoresRepository {
       }
     ''';
 
+    final authHeaders = await _authRepository.getAuthHeaders();
+
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'query': query,
-        if (userId != null && userId.isNotEmpty) 'variables': {'userId': userId},
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders,
+      },
+      body: jsonEncode({'query': query}),
     );
 
     if (response.statusCode == 200) {
@@ -46,7 +39,7 @@ class ScoresRepository {
         throw Exception(body['errors'][0]['message']);
       }
 
-      final List<dynamic> scoresJson = body['data']['scores'] ?? [];
+      final List<dynamic> scoresJson = body['data']['myScores'] ?? [];
 
       return scoresJson.map((json) {
         return {
@@ -60,24 +53,24 @@ class ScoresRepository {
     }
   }
 
-  static String _formatScore(dynamic val) {
-    if (val == null) return '0';
-    if (val is num) {
-      return val.toString().replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
-    }
-    return val.toString();
+  static String _formatScore(dynamic score) {
+    if (score == null) return '0';
+    final n = int.tryParse(score.toString()) ?? 0;
+    // Format avec des espaces pour la lisibilité
+    return n.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]} ',
+        );
   }
 
-  static String _formatDate(dynamic val) {
-    if (val == null) return 'Date inconnue';
+  static String _formatDate(dynamic dateStr) {
+    if (dateStr == null) return '';
     try {
-      final dt = DateTime.parse(val.toString()).toLocal();
-      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      final d = DateTime.parse(dateStr.toString()).toLocal();
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year} '
+          '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
     } catch (_) {
-      return val.toString();
+      return dateStr.toString();
     }
   }
 }
