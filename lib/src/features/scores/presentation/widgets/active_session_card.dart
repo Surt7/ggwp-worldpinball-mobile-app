@@ -17,6 +17,8 @@ class ActiveSessionCard extends StatelessWidget {
     final modeName = session['modeName']?.toString() ?? 'Standard';
     final slotNumber = session['slotNumber']?.toString() ?? '1';
     final state = session['state']?.toString() ?? 'InGame';
+    final rawSlots = session['slots'];
+    final List<dynamic>? slots = rawSlots is List ? rawSlots : null;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -113,6 +115,54 @@ class ActiveSessionCard extends StatelessWidget {
               ),
             ],
           ),
+          if (slots != null && slots.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: slots.map<Widget>((slot) {
+                final sNum = slot['slotNumber'] ?? slot['SlotNumber'];
+                final isOccupied =
+                    slot['isOccupied'] == true || slot['IsOccupied'] == true;
+                final initials =
+                    (slot['guestInitials'] ?? slot['GuestInitials'])
+                        ?.toString();
+                final isMe = sNum.toString() == slotNumber;
+
+                final label = isMe
+                    ? 'J$sNum: VOUS'
+                    : isOccupied
+                    ? 'J$sNum: ${initials != null && initials.isNotEmpty ? initials : "Joueur"}'
+                    : 'J$sNum: [Libre]';
+
+                final color = isMe
+                    ? const Color(0xFF00E676)
+                    : isOccupied
+                    ? const Color(0xFF00B0FF)
+                    : Colors.grey.shade600;
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: color.withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ],
       ),
     );

@@ -140,9 +140,11 @@ class _ScoresScreenState extends State<ScoresScreen>
                 } else {
                   setState(() {
                     if (_activeSession != null) {
-                      _activeSession = Map<String, dynamic>.from(
-                        _activeSession!,
-                      )..['state'] = stateStr;
+                      final slots = update['slots'] ?? update['Slots'];
+                      _activeSession =
+                          Map<String, dynamic>.from(_activeSession!)
+                            ..['state'] = stateStr
+                            ..['slots'] = slots;
                     }
                   });
                 }
