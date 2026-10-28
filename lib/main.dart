@@ -62,6 +62,7 @@ class MainNavigationScreen extends StatelessWidget {
             onPressed: () async {
               await AuthRepository().logout();
               if (context.mounted) {
+                context.read<MachinesBloc>().add(LoadMachinesEvent());
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),

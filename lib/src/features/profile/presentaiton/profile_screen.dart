@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../auth/presentation/widgets/login_modal.dart';
+import '../../machines/bloc/machines_bloc.dart';
+import '../../machines/bloc/machines_event.dart';
 import '../data/profile_repository.dart';
 import 'widgets/add_machine_modal.dart';
 
@@ -47,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => LoginModal(
         onLoginSuccess: () {
           _checkAuthState();
+          context.read<MachinesBloc>().add(LoadMachinesEvent());
           setState(() {});
         },
       ),
@@ -57,6 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _authRepository.logout();
     await _checkAuthState();
     if (mounted) {
+      context.read<MachinesBloc>().add(LoadMachinesEvent());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),
       );
