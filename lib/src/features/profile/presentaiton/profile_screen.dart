@@ -9,7 +9,9 @@ import 'widgets/add_machine_modal.dart';
 
 /// User Profile screen displaying real profile info from WorldPinball backend and Keycloak Auth state.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final VoidCallback? onLogout;
+
+  const ProfileScreen({super.key, this.onLogout});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -62,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await _checkAuthState();
     if (mounted) {
       context.read<MachinesBloc>().add(LoadMachinesEvent());
+      widget.onLogout?.call();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),
       );

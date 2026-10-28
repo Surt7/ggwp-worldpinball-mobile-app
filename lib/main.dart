@@ -6,13 +6,14 @@ import 'package:world_pinball_gg_wp/src/features/machines/presentation/machines_
 import 'package:world_pinball_gg_wp/src/features/profile/presentaiton/profile_screen.dart';
 import 'package:world_pinball_gg_wp/src/shared/config/security_config.dart';
 import 'package:world_pinball_gg_wp/src/shared/theme/app_theme.dart';
-import 'src/features/machines/data/machine_repository.dart';
+import 'src/features/auth/data/auth_repository.dart';
+import 'src/features/auth/presentation/login_screen.dart';
+import 'src/features/leaderboard/presentation/leaderboard_screen.dart';
 import 'src/features/machines/bloc/machines_bloc.dart';
 import 'src/features/machines/bloc/machines_event.dart';
-import 'src/features/leaderboard/presentation/leaderboard_screen.dart';
+import 'src/features/machines/data/machine_repository.dart';
 import 'src/features/qr_code/presentation/qr_pass_screen.dart';
 import 'src/features/scores/presentation/scores_screen.dart';
-import 'src/features/auth/data/auth_repository.dart';
 
 void main() {
   // In debug mode, verify certificates using the local WorldPinball Root CA and handle emulator routing.
@@ -35,15 +36,84 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: BlocProvider(
-        create: (context) => MachinesBloc(MachineRepository())..add(LoadMachinesEvent()),
-        child: const MainNavigationScreen(),
+        create: (context) => MachinesBloc(MachineRepository()),
+        child: const AuthGate(),
       ),
     );
   }
 }
 
+/// Authentication Gate (Option 1):
+/// Guards the application so that only authenticated users access the main navigation.
+/// When not authenticated, displays the full-screen Keycloak LoginScreen.
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  final _authRepository = AuthRepository();
+  bool _isLoading = true;
+  bool _isAuthenticated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final loggedIn = await _authRepository.isLoggedIn();
+    if (mounted) {
+      setState(() {
+        _isAuthenticated = loggedIn;
+        _isLoading = false;
+      });
+      if (loggedIn) {
+        context.read<MachinesBloc>().add(LoadMachinesEvent());
+      }
+    }
+  }
+
+  void _onLoginSuccess() {
+    setState(() {
+      _isAuthenticated = true;
+    });
+    context.read<MachinesBloc>().add(LoadMachinesEvent());
+  }
+
+  void _onLogout() {
+    setState(() {
+      _isAuthenticated = false;
+    });
+    context.read<MachinesBloc>().add(LoadMachinesEvent());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF121212),
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xFFE53935)),
+        ),
+      );
+    }
+
+    if (!_isAuthenticated) {
+      return LoginScreen(onLoginSuccess: _onLoginSuccess);
+    }
+
+    return MainNavigationScreen(onLogout: _onLogout);
+  }
+}
+
 class MainNavigationScreen extends StatelessWidget {
-  const MainNavigationScreen({super.key});
+  final VoidCallback onLogout;
+
+  const MainNavigationScreen({super.key, required this.onLogout});
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -62,8 +132,8 @@ class MainNavigationScreen extends StatelessWidget {
             onPressed: () async {
               await AuthRepository().logout();
               if (context.mounted) {
-                context.read<MachinesBloc>().add(LoadMachinesEvent());
                 Navigator.pop(context);
+                onLogout();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Déconnecté de Keycloak avec succès.')),
                 );
@@ -135,12 +205,12 @@ class MainNavigationScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            ScoresScreen(),
-            MachinesScreen(),
-            LeaderboardScreen(),
-            ProfileScreen(),
+            const ScoresScreen(),
+            const MachinesScreen(),
+            const LeaderboardScreen(),
+            ProfileScreen(onLogout: onLogout),
           ],
         ),
         bottomNavigationBar: Container(
@@ -151,6 +221,7 @@ class MainNavigationScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: const Icon(Icons.logout, color: Colors.grey),
+                  tooltip: 'Déconnexion',
                   onPressed: () => _showLogoutDialog(context),
                 ),
                 Expanded(
