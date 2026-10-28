@@ -281,7 +281,7 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                   ),
                 ),
                 onPressed: () {
-                  // Simule la lecture d'un QR code flipper non encore réclamé (WP-00008)
+                  // Simulates scanning an unclaimed pinball machine QR code (WP-00008)
                   setState(() {
                     _codeController.text = 'WP-00008';
                     _errorMessage = null;
