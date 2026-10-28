@@ -40,7 +40,7 @@ class MachinesScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E1E1E),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE53935).withOpacity(0.5)),
+                          border: Border.all(color: const Color(0xFFE53935).withValues(alpha: 0.5)),
                         ),
                         child: const Icon(
                           Icons.videogame_asset_off,
