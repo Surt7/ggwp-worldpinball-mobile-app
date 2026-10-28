@@ -133,8 +133,12 @@ class _ScoresScreenState extends State<ScoresScreen>
               final newState = update['sessionState'] ?? update['SessionState'];
               if (newState != null) {
                 final stateStr = newState.toString();
-                if (stateStr.toLowerCase() == 'finished' ||
-                    stateStr.toLowerCase() == 'cancelled') {
+                final lower = stateStr.toLowerCase();
+                if (lower == 'ended' ||
+                    lower == 'finished' ||
+                    lower == 'cancelled' ||
+                    lower == 'aborted' ||
+                    lower == 'abandoned') {
                   // Session closed -> refresh all stats and scores
                   _loadAll();
                 } else {
