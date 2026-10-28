@@ -20,10 +20,10 @@ class UserProfile extends Equatable {
   @override
   // Props list used by Equatable to determine equality.
   List<Object?> get props => [
-        userId,
-        displayName,
-        avatarUrl,
-        countryCode,
-        isProfilePublic,
-      ];
+    userId,
+    displayName,
+    avatarUrl,
+    countryCode,
+    isProfilePublic,
+  ];
 }

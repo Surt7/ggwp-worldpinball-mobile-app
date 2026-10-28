@@ -27,14 +27,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     _leaderboardFuture = _repository.getLeaderboard();
   }
 
-  List<Map<String, dynamic>> _filterScores(List<Map<String, dynamic>> allScores) {
+  List<Map<String, dynamic>> _filterScores(
+    List<Map<String, dynamic>> allScores,
+  ) {
     if (_selectedModeId == 'all') {
       return allScores;
     }
 
     final modeItem = kGameModes.firstWhere(
       (m) => m.id == _selectedModeId,
-      orElse: () => const GameModeItem(id: 'all', label: 'Tous', icon: Icons.sports_esports),
+      orElse: () => const GameModeItem(
+        id: 'all',
+        label: 'Tous',
+        icon: Icons.sports_esports,
+      ),
     );
 
     // Filter by matching mode code or mode name
@@ -44,7 +50,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       final target = modeItem.id.toLowerCase();
       final labelTarget = modeItem.label.toLowerCase();
 
-      return code.contains(target) || name.contains(labelTarget) || code.contains(labelTarget);
+      return code.contains(target) ||
+          name.contains(labelTarget) ||
+          code.contains(labelTarget);
     }).toList();
 
     // Re-rank for the filtered view
@@ -160,12 +168,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return LeaderboardCard(entry: filteredScores[index]);
-                      },
-                      childCount: filteredScores.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return LeaderboardCard(entry: filteredScores[index]);
+                    }, childCount: filteredScores.length),
                   ),
                 ),
             ],
@@ -178,7 +183,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   String _selectedModeName() {
     final mode = kGameModes.firstWhere(
       (m) => m.id == _selectedModeId,
-      orElse: () => const GameModeItem(id: 'all', label: 'Tous', icon: Icons.sports_esports),
+      orElse: () => const GameModeItem(
+        id: 'all',
+        label: 'Tous',
+        icon: Icons.sports_esports,
+      ),
     );
     return mode.label;
   }

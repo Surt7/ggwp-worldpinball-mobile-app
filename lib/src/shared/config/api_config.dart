@@ -4,4 +4,9 @@ class ApiConfig {
     'GRAPHQL_URL',
     defaultValue: 'https://bff.worldpinball.local/graphql',
   );
+
+  static const String lobbyHubUrl = String.fromEnvironment(
+    'LOBBY_HUB_URL',
+    defaultValue: 'https://bff.worldpinball.local/hubs/lobby',
+  );
 }

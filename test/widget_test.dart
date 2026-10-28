@@ -4,11 +4,11 @@ import 'package:world_pinball_gg_wp/main.dart';
 import 'package:world_pinball_gg_wp/src/features/navigation/presentation/main_navigation_screen.dart';
 
 void main() {
-  testWidgets('MainNavigationScreen renders arcade tabs smoke test', (WidgetTester tester) async {
+  testWidgets('MainNavigationScreen renders arcade tabs smoke test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: MainNavigationScreen(onLogout: () {}),
-      ),
+      MaterialApp(home: MainNavigationScreen(onLogout: () {})),
     );
     await tester.pump();
 
@@ -20,7 +20,9 @@ void main() {
     expect(find.text('Profil'), findsOneWidget);
   });
 
-  testWidgets('MyApp boots into AuthGate smoke test', (WidgetTester tester) async {
+  testWidgets('MyApp boots into AuthGate smoke test', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const MyApp());
     await tester.pump();
 

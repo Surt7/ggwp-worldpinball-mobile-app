@@ -48,7 +48,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: const Color(0xFF2E7D32),
-            content: Text('Bienvenue, ${tokens.name ?? tokens.username ?? "Joueur"} !'),
+            content: Text(
+              'Bienvenue, ${tokens.name ?? tokens.username ?? "Joueur"} !',
+            ),
           ),
         );
         widget.onLoginSuccess();
@@ -70,7 +72,10 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 28.0,
+              vertical: 24.0,
+            ),
             child: Form(
               key: _formKey,
               child: Column(
@@ -104,16 +109,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         color: Colors.red.shade900.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               _errorMessage!,
-                              style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -137,7 +151,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE53935),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty)
@@ -156,7 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       prefixIcon: const Icon(Icons.lock, color: Colors.grey),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
                           color: Colors.grey,
                         ),
                         onPressed: () {
@@ -173,7 +192,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE53935),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     validator: (v) => (v == null || v.isEmpty)

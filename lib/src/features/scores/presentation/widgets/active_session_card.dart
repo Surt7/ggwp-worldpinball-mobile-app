@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 // Arcade-themed glowing card displaying current live game session info
 class ActiveSessionCard extends StatelessWidget {
   final Map<String, dynamic> session;
+  final bool isLiveConnected;
 
-  const ActiveSessionCard({super.key, required this.session});
+  const ActiveSessionCard({
+    super.key,
+    required this.session,
+    this.isLiveConnected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +41,20 @@ class ActiveSessionCard extends StatelessWidget {
               Container(
                 width: 10,
                 height: 10,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF00E676),
+                decoration: BoxDecoration(
+                  color: isLiveConnected
+                      ? const Color(0xFF00E676)
+                      : const Color(0xFFFFB300),
                   shape: BoxShape.circle,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'PARTIE EN COURS (LIVE)',
+              Text(
+                isLiveConnected ? 'PARTIE EN DIRECT (LIVE)' : 'PARTIE EN COURS',
                 style: TextStyle(
-                  color: Color(0xFF00E676),
+                  color: isLiveConnected
+                      ? const Color(0xFF00E676)
+                      : const Color(0xFFFFB300),
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                   letterSpacing: 1.2,

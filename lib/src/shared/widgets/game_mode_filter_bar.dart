@@ -21,7 +21,11 @@ const List<GameModeItem> kGameModes = [
   GameModeItem(id: 'survie', label: 'Survie', icon: Icons.shield),
   GameModeItem(id: 'time_attack', label: 'Time Attack', icon: Icons.timer),
   GameModeItem(id: 'coop', label: 'Co-op', icon: Icons.people),
-  GameModeItem(id: 'battle_royale', label: 'Battle Royale', icon: Icons.military_tech),
+  GameModeItem(
+    id: 'battle_royale',
+    label: 'Battle Royale',
+    icon: Icons.military_tech,
+  ),
   GameModeItem(id: 'en_ligne', label: 'En ligne', icon: Icons.wifi),
 ];
 
@@ -81,7 +85,10 @@ class GameModeFilterBar extends StatelessWidget {
               // License Chip / Dropdown
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2A2A2A),
                     borderRadius: BorderRadius.circular(16),
@@ -103,7 +110,11 @@ class GameModeFilterBar extends StatelessWidget {
                       ),
                       if (onLicenseSelected != null) ...[
                         const SizedBox(width: 4),
-                        const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 18),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
                       ],
                     ],
                   ),
@@ -122,7 +133,10 @@ class GameModeFilterBar extends StatelessWidget {
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE53935).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12),
@@ -171,7 +185,10 @@ class GameModeFilterBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFE53935)
@@ -186,7 +203,9 @@ class GameModeFilterBar extends StatelessWidget {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFE53935).withValues(alpha: 0.35),
+                              color: const Color(
+                                0xFFE53935,
+                              ).withValues(alpha: 0.35),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -205,8 +224,12 @@ class GameModeFilterBar extends StatelessWidget {
                       Text(
                         mode.label,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.grey.shade300,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : Colors.grey.shade300,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                           fontSize: 12,
                         ),
                       ),

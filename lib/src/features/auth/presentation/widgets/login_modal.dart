@@ -46,7 +46,9 @@ class _LoginModalState extends State<LoginModal> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: Colors.green.shade800,
-            content: Text('Bienvenue, ${tokens.name ?? tokens.username ?? "Joueur"} !'),
+            content: Text(
+              'Bienvenue, ${tokens.name ?? tokens.username ?? "Joueur"} !',
+            ),
           ),
         );
         widget.onLoginSuccess?.call();
@@ -127,8 +129,9 @@ class _LoginModalState extends State<LoginModal> {
                 prefixIcon: Icon(Icons.person, color: Colors.grey),
                 border: OutlineInputBorder(),
               ),
-              validator: (val) =>
-                  (val == null || val.trim().isEmpty) ? 'Veuillez saisir votre identifiant' : null,
+              validator: (val) => (val == null || val.trim().isEmpty)
+                  ? 'Veuillez saisir votre identifiant'
+                  : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -142,26 +145,33 @@ class _LoginModalState extends State<LoginModal> {
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: Colors.grey,
                   ),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                 ),
                 border: const OutlineInputBorder(),
               ),
-              validator: (val) =>
-                  (val == null || val.isEmpty) ? 'Veuillez saisir votre mot de passe' : null,
+              validator: (val) => (val == null || val.isEmpty)
+                  ? 'Veuillez saisir votre mot de passe'
+                  : null,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935),
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: _isLoading ? null : _handleLogin,
               child: _isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Text(
                       'SE CONNECTER',

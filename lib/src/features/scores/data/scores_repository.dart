@@ -8,8 +8,11 @@ class ScoresRepository {
 
   /// Fetches aggregate stats directly computed by PostgreSQL (count and best score)
   Future<Map<String, dynamic>> getMyScoreStats({String? modeCode}) async {
-    final modeArg = (modeCode != null && modeCode != 'all') ? 'modeCode: "$modeCode"' : '';
-    final query = '''
+    final modeArg = (modeCode != null && modeCode != 'all')
+        ? 'modeCode: "$modeCode"'
+        : '';
+    final query =
+        '''
       query {
         myScoreStats($modeArg) {
           totalGames
@@ -22,10 +25,7 @@ class ScoresRepository {
 
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+      headers: {'Content-Type': 'application/json', ...authHeaders},
       body: jsonEncode({'query': query}),
     );
 
@@ -42,7 +42,9 @@ class ScoresRepository {
         'bestScore': _formatScore(stats['bestScore']),
       };
     } else {
-      throw Exception('Erreur serveur stats: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur stats: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
@@ -57,7 +59,8 @@ class ScoresRepository {
       whereFilter = ', where: { mode: { code: { eq: "$modeCode" } } }';
     }
 
-    final query = '''
+    final query =
+        '''
       query {
         myScores(skip: $skip, take: $take, order: { achievedAtUtc: DESC }$whereFilter) {
           scoreEntryId
@@ -81,10 +84,7 @@ class ScoresRepository {
 
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+      headers: {'Content-Type': 'application/json', ...authHeaders},
       body: jsonEncode({'query': query}),
     );
 
@@ -99,16 +99,21 @@ class ScoresRepository {
 
       return scoresJson.map((json) {
         return {
-          'machine': json['machine']?['displayName']?.toString() ?? 'Flipper WorldPinball',
+          'machine':
+              json['machine']?['displayName']?.toString() ??
+              'Flipper WorldPinball',
           'modeCode': json['mode']?['code']?.toString(),
           'modeName': json['mode']?['name']?.toString() ?? 'Standard',
-          'licenseName': json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
+          'licenseName':
+              json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
           'score': _formatScore(json['score']),
           'date': _formatDate(json['achievedAtUtc']),
         };
       }).toList();
     } else {
-      throw Exception('Erreur serveur scores: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur scores: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
@@ -116,9 +121,9 @@ class ScoresRepository {
     if (score == null) return '0';
     final n = int.tryParse(score.toString()) ?? 0;
     return n.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]} ',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]} ',
+    );
   }
 
   static String _formatDate(dynamic dateStr) {

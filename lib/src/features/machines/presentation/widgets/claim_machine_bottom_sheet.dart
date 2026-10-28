@@ -26,7 +26,8 @@ class ClaimMachineBottomSheet extends StatefulWidget {
   const ClaimMachineBottomSheet({super.key});
 
   @override
-  State<ClaimMachineBottomSheet> createState() => _ClaimMachineBottomSheetState();
+  State<ClaimMachineBottomSheet> createState() =>
+      _ClaimMachineBottomSheetState();
 }
 
 class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
@@ -195,16 +196,25 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                   decoration: BoxDecoration(
                     color: Colors.red.shade900.withValues(alpha: 0.35),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Colors.redAccent.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.redAccent,
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -225,8 +235,14 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                 ),
                 decoration: InputDecoration(
                   labelText: 'Code d\'activation (ex: WP-00005)',
-                  labelStyle: TextStyle(color: Colors.grey.shade400, letterSpacing: 0),
-                  prefixIcon: const Icon(Icons.qr_code, color: Color(0xFFE53935)),
+                  labelStyle: TextStyle(
+                    color: Colors.grey.shade400,
+                    letterSpacing: 0,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.qr_code,
+                    color: Color(0xFFE53935),
+                  ),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear, color: Colors.grey),
                     onPressed: () => _codeController.clear(),
@@ -239,7 +255,10 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFE53935), width: 1.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFE53935),
+                      width: 1.5,
+                    ),
                   ),
                 ),
                 validator: (val) {
@@ -284,7 +303,11 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                 icon: const Icon(Icons.camera_alt_outlined, color: Colors.grey),
                 label: const Text(
                   'SCANNER LE QR CODE VIA CAMÉRA',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -303,7 +326,10 @@ class _ClaimMachineBottomSheetState extends State<ClaimMachineBottomSheet> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Text(
                         'LIER CE FLIPPER AU COMPTE',

@@ -103,8 +103,8 @@ class _ArcadeLogoTransitionState extends State<ArcadeLogoTransition>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            final effectiveGgOpacity =
-                (_ggOpacity.value * _ggFadeOut.value).clamp(0.0, 1.0);
+            final effectiveGgOpacity = (_ggOpacity.value * _ggFadeOut.value)
+                .clamp(0.0, 1.0);
 
             return Stack(
               clipBehavior: Clip.none,
@@ -117,7 +117,10 @@ class _ArcadeLogoTransitionState extends State<ArcadeLogoTransition>
                     child: Transform.scale(
                       scale: _ggScale.value,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 8.0,
+                        ),
                         child: Text(
                           'GG ! ',
                           textAlign: TextAlign.center,
@@ -129,11 +132,15 @@ class _ArcadeLogoTransitionState extends State<ArcadeLogoTransition>
                             color: const Color(0xFFFF2A2A),
                             shadows: [
                               Shadow(
-                                color: const Color(0xFFE53935).withValues(alpha: 0.95),
+                                color: const Color(
+                                  0xFFE53935,
+                                ).withValues(alpha: 0.95),
                                 blurRadius: 28,
                               ),
                               Shadow(
-                                color: const Color(0xFFFF1744).withValues(alpha: 0.7),
+                                color: const Color(
+                                  0xFFFF1744,
+                                ).withValues(alpha: 0.7),
                                 blurRadius: 44,
                               ),
                             ],

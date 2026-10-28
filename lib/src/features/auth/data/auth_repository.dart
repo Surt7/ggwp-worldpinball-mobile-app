@@ -16,7 +16,7 @@ class AuthRepository {
   final FlutterSecureStorage _storage;
 
   AuthRepository({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   Future<AuthTokens> login({
     required String username,
@@ -107,7 +107,10 @@ class AuthRepository {
 
         await _storage.write(key: _accessTokenKey, value: tokens.accessToken);
         if (tokens.refreshToken.isNotEmpty) {
-          await _storage.write(key: _refreshTokenKey, value: tokens.refreshToken);
+          await _storage.write(
+            key: _refreshTokenKey,
+            value: tokens.refreshToken,
+          );
         }
         return tokens.accessToken;
       } else {

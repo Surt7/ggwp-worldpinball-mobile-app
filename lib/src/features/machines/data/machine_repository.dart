@@ -24,10 +24,7 @@ class MachineRepository {
     final authHeaders = await _authRepository.getAuthHeaders();
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+      headers: {'Content-Type': 'application/json', ...authHeaders},
       body: jsonEncode({'query': query}),
     );
 
@@ -39,7 +36,9 @@ class MachineRepository {
       final List<dynamic> machinesJson = body['data']['machines'] ?? [];
       return machinesJson.map((json) => Machine.fromJson(json)).toList();
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
@@ -64,10 +63,7 @@ class MachineRepository {
     final authHeaders = await _authRepository.getAuthHeaders();
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+      headers: {'Content-Type': 'application/json', ...authHeaders},
       body: jsonEncode({
         'query': mutation,
         'variables': {'code': code.trim()},
@@ -81,7 +77,9 @@ class MachineRepository {
       }
       return body['data']['claimMachine'] as Map<String, dynamic>;
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 }

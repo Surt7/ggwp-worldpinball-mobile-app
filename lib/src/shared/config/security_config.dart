@@ -58,9 +58,10 @@ class WorldPinballHttpOverrides extends HttpOverrides {
 
     // On Android emulator, bridge '*.worldpinball.local' domains to host gateway 10.0.2.2
     client.connectionFactory = (Uri uri, String? host, int? port) {
-      final actualHost = (Platform.isAndroid &&
+      final actualHost =
+          (Platform.isAndroid &&
               ((host != null && host.endsWith('worldpinball.local')) ||
-               uri.host.endsWith('worldpinball.local')))
+                  uri.host.endsWith('worldpinball.local')))
           ? '10.0.2.2'
           : (host ?? uri.host);
       final targetPort = port ?? (uri.isScheme('https') ? 443 : 80);
@@ -75,7 +76,8 @@ class WorldPinballHttpOverrides extends HttpOverrides {
             // Since Android emulator connects to 10.0.2.2, BoringSSL flags IP address mismatch.
             // We verify that the certificate was genuinely issued by our mkcert Root CA.
             final issuer = cert.issuer.toLowerCase();
-            return issuer.contains('mkcert') && issuer.contains('pc-fractal-phil');
+            return issuer.contains('mkcert') &&
+                issuer.contains('pc-fractal-phil');
           },
         );
       }

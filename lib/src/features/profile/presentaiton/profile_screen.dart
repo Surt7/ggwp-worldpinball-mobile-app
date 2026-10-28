@@ -86,7 +86,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Erreur API: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+                  Text(
+                    'Erreur API: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => setState(() {}),
@@ -106,21 +109,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             // Keycloak Auth Status Banner
             Card(
-              color: _isLoggedIn ? const Color(0xFF1B382B) : const Color(0xFF2C2416),
+              color: _isLoggedIn
+                  ? const Color(0xFF1B382B)
+                  : const Color(0xFF2C2416),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
-                  color: _isLoggedIn ? Colors.green.shade600 : Colors.amber.shade700,
+                  color: _isLoggedIn
+                      ? Colors.green.shade600
+                      : Colors.amber.shade700,
                   width: 1,
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: Row(
                   children: [
                     Icon(
                       _isLoggedIn ? Icons.verified_user : Icons.lock_outline,
-                      color: _isLoggedIn ? Colors.greenAccent : Colors.amberAccent,
+                      color: _isLoggedIn
+                          ? Colors.greenAccent
+                          : Colors.amberAccent,
                       size: 26,
                     ),
                     const SizedBox(width: 12),
@@ -134,7 +146,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 : 'Keycloak IAM : Non authentifié',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: _isLoggedIn ? Colors.greenAccent : Colors.amberAccent,
+                              color: _isLoggedIn
+                                  ? Colors.greenAccent
+                                  : Colors.amberAccent,
                               fontSize: 14,
                             ),
                           ),
@@ -157,11 +171,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           foregroundColor: const Color(0xFFE53935),
                           backgroundColor: Colors.white10,
                         ),
-                        child: const Text('LOGIN', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'LOGIN',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       )
                     else
                       IconButton(
-                        icon: const Icon(Icons.logout, color: Colors.white70, size: 20),
+                        icon: const Icon(
+                          Icons.logout,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
                         tooltip: 'Déconnexion Keycloak',
                         onPressed: _handleLogout,
                       ),
@@ -189,14 +210,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            profile?['displayName']?.toString() ?? 'Opérateur WorldPinball',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            profile?['displayName']?.toString() ??
+                                'Opérateur WorldPinball',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.amber.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
@@ -212,8 +240,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                profile?['countryCode']?.toString() ?? 'FR 🇫🇷',
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                profile?['countryCode']?.toString() ??
+                                    'FR 🇫🇷',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ],
                           ),

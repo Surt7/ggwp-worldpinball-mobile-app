@@ -22,10 +22,7 @@ class ProfileRepository {
     final authHeaders = await _authRepository.getAuthHeaders();
     final response = await http.post(
       Uri.parse(ApiConfig.graphqlUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
+      headers: {'Content-Type': 'application/json', ...authHeaders},
       body: jsonEncode({'query': query}),
     );
 
@@ -40,7 +37,9 @@ class ProfileRepository {
       }
       return null;
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
@@ -50,7 +49,9 @@ class ProfileRepository {
     required String manufacturer,
     required String serialNumber,
   }) async {
-    final url = Uri.parse('https://bff.worldpinball.local/api/v1/machines/enroll');
+    final url = Uri.parse(
+      'https://bff.worldpinball.local/api/v1/machines/enroll',
+    );
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},

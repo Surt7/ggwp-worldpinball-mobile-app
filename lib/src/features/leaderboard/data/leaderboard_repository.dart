@@ -43,15 +43,20 @@ class LeaderboardRepository {
         return {
           'rank': index + 1,
           'player': json['userId']?.toString() ?? 'Joueur Anonyme',
-          'machine': json['machine']?['displayName']?.toString() ?? 'Flipper WorldPinball',
+          'machine':
+              json['machine']?['displayName']?.toString() ??
+              'Flipper WorldPinball',
           'modeCode': json['mode']?['code']?.toString(),
           'modeName': json['mode']?['name']?.toString() ?? 'Standard',
-          'licenseName': json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
+          'licenseName':
+              json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
           'score': _formatScore(json['score']),
         };
       }).toList();
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+      throw Exception(
+        'Erreur serveur: ${response.statusCode} - ${response.body}',
+      );
     }
   }
 
@@ -59,9 +64,9 @@ class LeaderboardRepository {
     if (val == null) return '0';
     if (val is num) {
       return val.toString().replaceAllMapped(
-            RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-            (Match m) => '${m[1]},',
-          );
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match m) => '${m[1]},',
+      );
     }
     return val.toString();
   }

@@ -22,9 +22,7 @@ class LeaderboardCard extends StatelessWidget {
             ),
           ],
         ),
-        child: const Center(
-          child: Text('🥇', style: TextStyle(fontSize: 22)),
-        ),
+        child: const Center(child: Text('🥇', style: TextStyle(fontSize: 22))),
       );
     }
     if (rank == 2) {
@@ -36,9 +34,7 @@ class LeaderboardCard extends StatelessWidget {
           color: const Color(0xFFC0C0C0).withValues(alpha: 0.15),
           border: Border.all(color: const Color(0xFFC0C0C0), width: 1.5),
         ),
-        child: const Center(
-          child: Text('🥈', style: TextStyle(fontSize: 22)),
-        ),
+        child: const Center(child: Text('🥈', style: TextStyle(fontSize: 22))),
       );
     }
     if (rank == 3) {
@@ -50,9 +46,7 @@ class LeaderboardCard extends StatelessWidget {
           color: const Color(0xFFCD7F32).withValues(alpha: 0.15),
           border: Border.all(color: const Color(0xFFCD7F32), width: 1.5),
         ),
-        child: const Center(
-          child: Text('🥉', style: TextStyle(fontSize: 22)),
-        ),
+        child: const Center(child: Text('🥉', style: TextStyle(fontSize: 22))),
       );
     }
 
@@ -93,8 +87,8 @@ class LeaderboardCard extends StatelessWidget {
                 color: rank == 1
                     ? const Color(0xFFFFD700).withValues(alpha: 0.4)
                     : (rank == 2
-                        ? const Color(0xFFC0C0C0).withValues(alpha: 0.3)
-                        : const Color(0xFFCD7F32).withValues(alpha: 0.3)),
+                          ? const Color(0xFFC0C0C0).withValues(alpha: 0.3)
+                          : const Color(0xFFCD7F32).withValues(alpha: 0.3)),
                 width: 1.2,
               )
             : BorderSide(color: Colors.grey.shade900),

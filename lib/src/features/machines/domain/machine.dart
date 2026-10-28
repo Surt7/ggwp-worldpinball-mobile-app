@@ -24,25 +24,28 @@ class Machine extends Equatable {
       machineId: json['machineId']?.toString() ?? '',
       ipId: json['ipId']?.toString() ?? '',
       displayName: json['displayName']?.toString() ?? '',
-      serialNumber: json['worldPinballSerialNumber']?.toString() ?? json['serialNumber']?.toString() ?? '',
+      serialNumber:
+          json['worldPinballSerialNumber']?.toString() ??
+          json['serialNumber']?.toString() ??
+          '',
       manufacturer: json['manufacturer']?.toString() ?? 'Stern Pinball',
       status: json['status']?.toString() ?? 'Online',
       registeredAt: json['registeredAtUtc'] != null
           ? DateTime.parse(json['registeredAtUtc'].toString())
           : (json['registeredAt'] != null
-              ? DateTime.parse(json['registeredAt'].toString())
-              : DateTime.now()),
+                ? DateTime.parse(json['registeredAt'].toString())
+                : DateTime.now()),
     );
   }
 
   @override
   List<Object?> get props => [
-        machineId,
-        ipId,
-        displayName,
-        serialNumber,
-        manufacturer,
-        status,
-        registeredAt,
-      ];
+    machineId,
+    ipId,
+    displayName,
+    serialNumber,
+    manufacturer,
+    status,
+    registeredAt,
+  ];
 }

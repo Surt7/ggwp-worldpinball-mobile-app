@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/game_mode_filter_bar.dart';
 import '../data/scores_repository.dart';
 import '../../games/data/game_session_repository.dart';
+import '../../games/data/lobby_hub_service.dart';
 import 'widgets/active_session_card.dart';
 
 /// Screen displaying personal scores with real aggregate stats and lazy-loaded paginated list.
@@ -12,16 +13,19 @@ class ScoresScreen extends StatefulWidget {
   State<ScoresScreen> createState() => _ScoresScreenState();
 }
 
-class _ScoresScreenState extends State<ScoresScreen> {
+class _ScoresScreenState extends State<ScoresScreen>
+    with WidgetsBindingObserver {
   final _repository = ScoresRepository();
   final _scrollController = ScrollController();
 
   String _selectedModeId = 'all';
   String _selectedLicense = 'Resident Evil: Death Island';
 
-  // Active game session (null if player has no active game)
+  // Active game session and SignalR live connection
   final _sessionRepository = GameSessionRepository();
+  final _hubService = LobbyHubService();
   Map<String, dynamic>? _activeSession;
+  bool _isLiveConnected = false;
 
   // Stats
   Map<String, dynamic>? _stats;
@@ -37,14 +41,30 @@ class _ScoresScreenState extends State<ScoresScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadAll();
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _hubService.disconnect();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      // Disconnect immediately when app leaves screen to preserve mobile battery
+      _hubService.disconnect();
+      if (mounted) setState(() => _isLiveConnected = false);
+    } else if (state == AppLifecycleState.resumed) {
+      // Re-establish real-time connection if a game session is currently active
+      _connectLiveHubIfNeeded();
+    }
   }
 
   void _onScroll() {
@@ -92,12 +112,58 @@ class _ScoresScreenState extends State<ScoresScreen> {
         _currentSkip = games.length;
         _hasMore = games.length >= _pageSize;
       });
+      _connectLiveHubIfNeeded();
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoadingStats = false;
         _isLoadingGames = false;
       });
+    }
+  }
+
+  void _connectLiveHubIfNeeded() {
+    final sessionId = _activeSession?['sessionId']?.toString();
+    if (sessionId != null && sessionId.isNotEmpty) {
+      _hubService
+          .connect(
+            sessionId: sessionId,
+            onLobbyUpdated: (update) {
+              if (!mounted) return;
+              final newState = update['sessionState'] ?? update['SessionState'];
+              if (newState != null) {
+                final stateStr = newState.toString();
+                if (stateStr.toLowerCase() == 'finished' ||
+                    stateStr.toLowerCase() == 'cancelled') {
+                  // Session closed -> refresh all stats and scores
+                  _loadAll();
+                } else {
+                  setState(() {
+                    if (_activeSession != null) {
+                      _activeSession = Map<String, dynamic>.from(
+                        _activeSession!,
+                      )..['state'] = stateStr;
+                    }
+                  });
+                }
+              }
+            },
+            onConnectionClosed: () {
+              if (mounted) {
+                setState(() => _isLiveConnected = false);
+              }
+            },
+          )
+          .then((_) {
+            if (mounted) {
+              setState(() => _isLiveConnected = _hubService.isConnected);
+            }
+          });
+    } else {
+      _hubService.disconnect();
+      if (mounted && _isLiveConnected) {
+        setState(() => _isLiveConnected = false);
+      }
     }
   }
 
@@ -189,7 +255,10 @@ class _ScoresScreenState extends State<ScoresScreen> {
             return Column(
               children: [
                 if (_activeSession != null) ...[
-                  ActiveSessionCard(session: _activeSession!),
+                  ActiveSessionCard(
+                    session: _activeSession!,
+                    isLiveConnected: _isLiveConnected,
+                  ),
                   const SizedBox(height: 14),
                 ],
                 Card(

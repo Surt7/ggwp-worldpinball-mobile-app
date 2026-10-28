@@ -41,7 +41,11 @@ class MachinesScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E1E1E),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE53935).withValues(alpha: 0.5)),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFE53935,
+                            ).withValues(alpha: 0.5),
+                          ),
                         ),
                         child: const Icon(
                           Icons.videogame_asset_off,
@@ -62,17 +66,17 @@ class MachinesScreen extends StatelessWidget {
                       const Text(
                         'Connectez-vous avec votre compte WorldPinball et associez une machine avec sa clé d\'activation.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                       const SizedBox(height: 24),
                       const SizedBox(height: 24),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE53935),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -81,7 +85,11 @@ class MachinesScreen extends StatelessWidget {
                         icon: const Icon(Icons.add, color: Colors.white),
                         label: const Text(
                           'ASSOCIER UN FLIPPER',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -89,8 +97,15 @@ class MachinesScreen extends StatelessWidget {
                         onPressed: () {
                           context.read<MachinesBloc>().add(LoadMachinesEvent());
                         },
-                        icon: const Icon(Icons.refresh, color: Colors.grey, size: 18),
-                        label: const Text('ACTUALISER', style: TextStyle(color: Colors.grey)),
+                        icon: const Icon(
+                          Icons.refresh,
+                          color: Colors.grey,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'ACTUALISER',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
                     ],
                   ),
@@ -110,10 +125,15 @@ class MachinesScreen extends StatelessWidget {
                 if (index == 0) {
                   return Card(
                     color: const Color(0xFF1E1E1E),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: const Color(0xFFE53935).withValues(alpha: 0.5)),
+                      side: BorderSide(
+                        color: const Color(0xFFE53935).withValues(alpha: 0.5),
+                      ),
                     ),
                     child: InkWell(
                       onTap: () => showClaimMachineBottomSheet(context),
@@ -125,7 +145,9 @@ class MachinesScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE53935).withValues(alpha: 0.2),
+                                color: const Color(
+                                  0xFFE53935,
+                                ).withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -151,7 +173,10 @@ class MachinesScreen extends StatelessWidget {
                                   SizedBox(height: 2),
                                   Text(
                                     'Code WP-XXXXX ou scan QR code',
-                                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -183,7 +208,11 @@ class MachinesScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       state.message,

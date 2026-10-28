@@ -122,7 +122,10 @@ class ResidentEvilRulesBottomSheet extends StatelessWidget {
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 8.0,
+            ),
             child: Row(
               children: [
                 Container(
@@ -228,7 +231,10 @@ class ResidentEvilRulesBottomSheet extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: rule.accentColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
