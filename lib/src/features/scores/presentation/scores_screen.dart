@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../shared/widgets/game_mode_filter_bar.dart';
 import '../data/scores_repository.dart';
 
-/// Screen displaying the real personal games history & stats with Game Mode & License filtering.
+/// Screen displaying personal scores with real aggregate stats and lazy-loaded paginated list.
 class ScoresScreen extends StatefulWidget {
   const ScoresScreen({super.key});
 
@@ -12,19 +12,103 @@ class ScoresScreen extends StatefulWidget {
 
 class _ScoresScreenState extends State<ScoresScreen> {
   final _repository = ScoresRepository();
-  late Future<List<Map<String, dynamic>>> _scoresFuture;
+  final _scrollController = ScrollController();
 
   String _selectedModeId = 'all';
   String _selectedLicense = 'Resident Evil: Death Island';
 
+  // Stats
+  Map<String, dynamic>? _stats;
+  bool _isLoadingStats = true;
+
+  // Games pagination
+  final List<Map<String, dynamic>> _games = [];
+  bool _isLoadingGames = false;
+  bool _hasMore = true;
+  int _currentSkip = 0;
+  static const int _pageSize = 20;
+
   @override
   void initState() {
     super.initState();
-    _loadScores();
+    _loadAll();
+    _scrollController.addListener(_onScroll);
   }
 
-  void _loadScores() {
-    _scoresFuture = _repository.getMyScores();
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      if (!_isLoadingGames && _hasMore) {
+        _loadMoreGames();
+      }
+    }
+  }
+
+  Future<void> _loadAll() async {
+    setState(() {
+      _isLoadingStats = true;
+      _isLoadingGames = true;
+      _games.clear();
+      _currentSkip = 0;
+      _hasMore = true;
+    });
+
+    try {
+      final statsFuture = _repository.getMyScoreStats(modeCode: _selectedModeId);
+      final gamesFuture = _repository.getMyScores(
+        skip: 0,
+        take: _pageSize,
+        modeCode: _selectedModeId,
+      );
+
+      final stats = await statsFuture;
+      final games = await gamesFuture;
+
+      if (!mounted) return;
+      setState(() {
+        _stats = stats;
+        _isLoadingStats = false;
+        _games.addAll(games);
+        _isLoadingGames = false;
+        _currentSkip = games.length;
+        _hasMore = games.length >= _pageSize;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingStats = false;
+        _isLoadingGames = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreGames() async {
+    if (_isLoadingGames || !_hasMore) return;
+    setState(() => _isLoadingGames = true);
+
+    try {
+      final moreGames = await _repository.getMyScores(
+        skip: _currentSkip,
+        take: _pageSize,
+        modeCode: _selectedModeId,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _games.addAll(moreGames);
+        _currentSkip += moreGames.length;
+        _isLoadingGames = false;
+        _hasMore = moreGames.length >= _pageSize;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoadingGames = false);
+    }
   }
 
   static Widget _buildStatItem(String label, String value, Color valueColor) {
@@ -43,110 +127,70 @@ class _ScoresScreenState extends State<ScoresScreen> {
     );
   }
 
-  List<Map<String, dynamic>> _filterGames(List<Map<String, dynamic>> allGames) {
-    if (_selectedModeId == 'all') {
-      return allGames;
-    }
-
-    final modeItem = kGameModes.firstWhere(
-      (m) => m.id == _selectedModeId,
-      orElse: () => const GameModeItem(id: 'all', label: 'Tous', icon: Icons.sports_esports),
-    );
-
-    return allGames.where((entry) {
-      final code = entry['modeCode']?.toString().toLowerCase() ?? '';
-      final name = entry['modeName']?.toString().toLowerCase() ?? '';
-      final target = modeItem.id.toLowerCase();
-      final labelTarget = modeItem.label.toLowerCase();
-
-      return code.contains(target) || name.contains(labelTarget) || code.contains(labelTarget);
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _scoresFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFFE53935)),
-          );
-        }
+    final totalCount = _stats?['totalGames']?.toString() ?? (_isLoadingStats ? '...' : '0');
+    final bestScore = _stats?['bestScore']?.toString() ?? (_isLoadingStats ? '...' : '-');
 
-        if (snapshot.hasError) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Erreur API : ${snapshot.error}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => setState(() => _loadScores()),
-                    child: const Text('RÉESSAYER'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
+    return RefreshIndicator(
+      color: const Color(0xFFE53935),
+      backgroundColor: const Color(0xFF1E1E1E),
+      onRefresh: _loadAll,
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16.0),
+        itemCount: _games.length + 4, // Header, Stats, Section Title, [Games...], Loading/End
+        itemBuilder: (context, index) {
+          // 0. Filter Bar
+          if (index == 0) {
+            return Column(
+              children: [
+                GameModeFilterBar(
+                  selectedModeId: _selectedModeId,
+                  onModeSelected: (modeId) {
+                    if (_selectedModeId == modeId) return;
+                    setState(() => _selectedModeId = modeId);
+                    _loadAll();
+                  },
+                  selectedLicense: _selectedLicense,
+                ),
+                const SizedBox(height: 16),
+              ],
+            );
+          }
 
-        final allGames = snapshot.data ?? [];
-        final games = _filterGames(allGames);
-
-        final bestScore = games.isNotEmpty ? games.first['score'].toString() : '-';
-
-        return RefreshIndicator(
-          color: const Color(0xFFE53935),
-          backgroundColor: const Color(0xFF1E1E1E),
-          onRefresh: () async {
-            setState(() => _loadScores());
-            await _scoresFuture;
-          },
-          child: ListView(
-            padding: const EdgeInsets.all(16.0),
-            children: [
-              // 1. License & Game Mode Filter Bar
-              GameModeFilterBar(
-                selectedModeId: _selectedModeId,
-                onModeSelected: (modeId) {
-                  setState(() => _selectedModeId = modeId);
-                },
-                selectedLicense: _selectedLicense,
-              ),
-              const SizedBox(height: 16),
-
-              // 2. Stats Summary Banner
-              Card(
-                color: const Color(0xFF1E1E1E),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildStatItem('TOTAL PARTIES', '${games.length}', Colors.white),
-                      Container(width: 1, height: 40, color: Colors.grey.shade800),
-                      _buildStatItem(
-                        'MEILLEUR SCORE',
-                        bestScore,
-                        const Color(0xFFE53935),
-                      ),
-                    ],
+          // 1. Stats Summary Banner
+          if (index == 1) {
+            return Column(
+              children: [
+                Card(
+                  color: const Color(0xFF1E1E1E),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStatItem('TOTAL PARTIES', totalCount, Colors.white),
+                        Container(width: 1, height: 40, color: Colors.grey.shade800),
+                        _buildStatItem(
+                          'MEILLEUR SCORE',
+                          bestScore,
+                          const Color(0xFFE53935),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
+              ],
+            );
+          }
 
-              // 3. Section Title
-              Row(
+          // 2. Section Title
+          if (index == 2) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
@@ -169,96 +213,107 @@ class _ScoresScreenState extends State<ScoresScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 8),
+            );
+          }
 
-              // 4. Games List or Empty State
-              if (games.isEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.sports_esports_outlined,
-                          size: 48,
-                          color: Colors.grey.shade700,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Aucune partie enregistrée en mode ${_selectedModeName()}.',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.grey, fontSize: 14),
-                        ),
-                      ],
-                    ),
+          // Last item: Loading indicator or empty state
+          if (index == _games.length + 3) {
+            if (_isLoadingGames) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24.0),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFE53935), strokeWidth: 2),
+                ),
+              );
+            }
+            if (_games.isEmpty && !_isLoadingStats) {
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.sports_esports_outlined,
+                        size: 48,
+                        color: Colors.grey.shade700,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Aucune partie enregistrée en mode ${_selectedModeName()}.',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                    ],
                   ),
-                )
-              else
-                ...games.map((game) {
-                  final modeName = game['modeName']?.toString();
+                ),
+              );
+            }
+            return const SizedBox(height: 24);
+          }
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8.0),
-                    color: const Color(0xFF1E1E1E),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.grey.shade900),
-                    ),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE53935).withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.sports_esports,
-                          color: Color(0xFFE53935),
-                          size: 22,
-                        ),
+          // Games items
+          final game = _games[index - 3];
+          final modeName = game['modeName']?.toString();
+
+          return Card(
+            margin: const EdgeInsets.only(bottom: 8.0),
+            color: const Color(0xFF1E1E1E),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: Colors.grey.shade900),
+            ),
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE53935).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.sports_esports,
+                  color: Color(0xFFE53935),
+                  size: 22,
+                ),
+              ),
+              title: Text(
+                game['machine'].toString(),
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              subtitle: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                children: [
+                  Text(
+                    game['date'].toString(),
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                  if (modeName != null && modeName.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      title: Text(
-                        game['machine'].toString(),
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      subtitle: Wrap(
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        spacing: 8,
-                        children: [
-                          Text(
-                            game['date'].toString(),
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
-                          ),
-                          if (modeName != null && modeName.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2A2A2A),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                modeName,
-                                style: const TextStyle(color: Colors.grey, fontSize: 10),
-                              ),
-                            ),
-                        ],
-                      ),
-                      trailing: Text(
-                        game['score'].toString(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
-                          color: Color(0xFFE53935),
-                          letterSpacing: 0.5,
-                        ),
+                      child: Text(
+                        modeName,
+                        style: const TextStyle(color: Colors.grey, fontSize: 10),
                       ),
                     ),
-                  );
-                }),
-            ],
-          ),
-        );
-      },
+                ],
+              ),
+              trailing: Text(
+                game['score'].toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Color(0xFFE53935),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 

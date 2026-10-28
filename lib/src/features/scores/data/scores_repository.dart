@@ -6,11 +6,60 @@ import '../../auth/data/auth_repository.dart';
 class ScoresRepository {
   final AuthRepository _authRepository = AuthRepository();
 
-  /// Fetches the authenticated player's personal scores from GraphQL API
-  Future<List<Map<String, dynamic>>> getMyScores() async {
-    const query = '''
+  /// Fetches aggregate stats directly computed by PostgreSQL (count and best score)
+  Future<Map<String, dynamic>> getMyScoreStats({String? modeCode}) async {
+    final modeArg = (modeCode != null && modeCode != 'all') ? 'modeCode: "$modeCode"' : '';
+    final query = '''
       query {
-        myScores(order: { achievedAtUtc: DESC }) {
+        myScoreStats($modeArg) {
+          totalGames
+          bestScore
+        }
+      }
+    ''';
+
+    final authHeaders = await _authRepository.getAuthHeaders();
+
+    final response = await http.post(
+      Uri.parse(ApiConfig.graphqlUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders,
+      },
+      body: jsonEncode({'query': query}),
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> body = jsonDecode(response.body);
+
+      if (body.containsKey('errors')) {
+        throw Exception(body['errors'][0]['message']);
+      }
+
+      final stats = body['data']?['myScoreStats'] ?? {};
+      return {
+        'totalGames': stats['totalGames'] ?? 0,
+        'bestScore': _formatScore(stats['bestScore']),
+      };
+    } else {
+      throw Exception('Erreur serveur stats: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  /// Fetches paginated personal scores (20 by 20) with optional mode filtering
+  Future<List<Map<String, dynamic>>> getMyScores({
+    int skip = 0,
+    int take = 20,
+    String? modeCode,
+  }) async {
+    String whereFilter = '';
+    if (modeCode != null && modeCode != 'all') {
+      whereFilter = ', where: { mode: { code: { eq: "$modeCode" } } }';
+    }
+
+    final query = '''
+      query {
+        myScores(skip: $skip, take: $take, order: { achievedAtUtc: DESC }$whereFilter) {
           scoreEntryId
           score
           achievedAtUtc
@@ -46,7 +95,7 @@ class ScoresRepository {
         throw Exception(body['errors'][0]['message']);
       }
 
-      final List<dynamic> scoresJson = body['data']['myScores'] ?? [];
+      final List<dynamic> scoresJson = body['data']?['myScores'] ?? [];
 
       return scoresJson.map((json) {
         return {
@@ -59,14 +108,13 @@ class ScoresRepository {
         };
       }).toList();
     } else {
-      throw Exception('Erreur serveur: ${response.statusCode} - ${response.body}');
+      throw Exception('Erreur serveur scores: ${response.statusCode} - ${response.body}');
     }
   }
 
   static String _formatScore(dynamic score) {
     if (score == null) return '0';
     final n = int.tryParse(score.toString()) ?? 0;
-    // Format avec des espaces pour la lisibilité
     return n.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]} ',

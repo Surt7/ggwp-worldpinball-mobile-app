@@ -14,7 +14,7 @@ void main() {
 
     // Verify navigation tabs and title are present
     expect(find.text('WORLD PINBALL'), findsOneWidget);
-    expect(find.text('Scores'), findsOneWidget);
+    expect(find.text('Mes Scores'), findsOneWidget);
     expect(find.text('Machines'), findsOneWidget);
     expect(find.text('Leaderboard'), findsOneWidget);
     expect(find.text('Profil'), findsOneWidget);

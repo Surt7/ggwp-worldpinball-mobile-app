@@ -34,7 +34,7 @@ class MainNavigationScreen extends StatelessWidget {
             indicatorColor: Color(0xFFE53935),
             indicatorSize: TabBarIndicatorSize.tab,
             tabs: [
-              Tab(icon: Icon(Icons.leaderboard), text: 'Scores'),
+              Tab(icon: Icon(Icons.leaderboard), text: 'Mes Scores'),
               Tab(icon: Icon(Icons.videogame_asset), text: 'Machines'),
               Tab(icon: Icon(Icons.emoji_events), text: 'Leaderboard'),
               Tab(icon: Icon(Icons.person), text: 'Profil'),
