@@ -60,7 +60,63 @@ class AuthRepository {
   }
 
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessTokenKey);
+    final token = await _storage.read(key: _accessTokenKey);
+    if (token == null || token.isEmpty) return null;
+
+    try {
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        final normalized = base64Url.normalize(parts[1]);
+        final payloadString = utf8.decode(base64Url.decode(normalized));
+        final Map<String, dynamic> payload = jsonDecode(payloadString);
+        final exp = payload['exp'] as int?;
+        if (exp != null) {
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          if (exp <= now + 30) {
+            // Token is expired or expiring in less than 30s -> refresh automatically
+            return await refreshToken();
+          }
+        }
+      }
+    } catch (_) {}
+
+    return token;
+  }
+
+  Future<String?> refreshToken() async {
+    final refreshToken = await _storage.read(key: _refreshTokenKey);
+    if (refreshToken == null || refreshToken.isEmpty) {
+      await logout();
+      return null;
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(_tokenEndpoint),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'client_id': _clientId,
+          'grant_type': 'refresh_token',
+          'refresh_token': refreshToken,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final tokens = AuthTokens.fromJson(json);
+
+        await _storage.write(key: _accessTokenKey, value: tokens.accessToken);
+        if (tokens.refreshToken.isNotEmpty) {
+          await _storage.write(key: _refreshTokenKey, value: tokens.refreshToken);
+        }
+        return tokens.accessToken;
+      } else {
+        await logout();
+        return null;
+      }
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<String?> getUserId() async {

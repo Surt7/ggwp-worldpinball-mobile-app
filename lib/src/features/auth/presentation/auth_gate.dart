@@ -5,6 +5,7 @@ import '../../machines/bloc/machines_event.dart';
 import '../../navigation/presentation/main_navigation_screen.dart';
 import '../data/auth_repository.dart';
 import 'login_screen.dart';
+import 'widgets/arcade_logo_transition.dart';
 
 /// Authentication Gate (Option 1):
 /// Guards the application so that only authenticated users access the main navigation.
@@ -28,7 +29,15 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   Future<void> _checkAuth() async {
+    final stopwatch = Stopwatch()..start();
     final loggedIn = await _authRepository.isLoggedIn();
+
+    // Ensure the arcade intro sequence plays gracefully (minimum ~2.4 seconds on boot)
+    final elapsed = stopwatch.elapsedMilliseconds;
+    if (elapsed < 2400) {
+      await Future.delayed(Duration(milliseconds: 2400 - elapsed));
+    }
+
     if (mounted) {
       setState(() {
         _isAuthenticated = loggedIn;
@@ -60,7 +69,10 @@ class _AuthGateState extends State<AuthGate> {
       return const Scaffold(
         backgroundColor: Color(0xFF121212),
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFE53935)),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: ArcadeLogoTransition(height: 85),
+          ),
         ),
       );
     }

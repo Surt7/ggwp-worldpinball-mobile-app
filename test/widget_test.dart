@@ -13,7 +13,7 @@ void main() {
     await tester.pump();
 
     // Verify navigation tabs and title are present
-    expect(find.text('World Pinball'), findsOneWidget);
+    expect(find.text('WORLD PINBALL'), findsOneWidget);
     expect(find.text('Scores'), findsOneWidget);
     expect(find.text('Machines'), findsOneWidget);
     expect(find.text('Leaderboard'), findsOneWidget);

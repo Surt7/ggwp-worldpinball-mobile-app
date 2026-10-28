@@ -18,7 +18,16 @@ class MainNavigationScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.black,
-          title: const Text('World Pinball'),
+          centerTitle: true,
+          title: const Text(
+            'WORLD PINBALL',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 3.0,
+              color: Colors.white,
+            ),
+          ),
           bottom: const TabBar(
             isScrollable: true,
             tabAlignment: TabAlignment.center,

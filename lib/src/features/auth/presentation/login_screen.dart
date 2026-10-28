@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/auth_repository.dart';
+import 'widgets/arcade_logo_transition.dart';
 
 /// Full-screen authentication gate for World Pinball (Option 1).
 /// All personal features (Machines, Scores, Profile) require a valid Keycloak account.
@@ -76,50 +77,20 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // App Icon / Logo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE53935), width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFE53935).withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        Icons.sports_esports,
-                        size: 42,
-                        color: Color(0xFFE53935),
-                      ),
-                    ),
+                  // Official World Pinball Logo with Arcade Intro Transition (GG -> Well Played -> World Pinball)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ArcadeLogoTransition(height: 75),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
 
-                  // Title & Subtitle
+                  // Subtitle
                   const Text(
-                    'WORLD PINBALL',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 3,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'AUTHENTIFICATION KEYCLOAK IAM',
+                    'AUTHENTIFICATION COMPTE JOUEUR',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      letterSpacing: 1.5,
+                      letterSpacing: 2.0,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFE53935),
                     ),
