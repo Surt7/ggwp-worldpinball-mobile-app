@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/rules/presentation/resident_evil_rules_bottom_sheet.dart';
 
 /// Representation of a Game Mode for Resident Evil Death Island and arcade filters.
 class GameModeItem {
@@ -78,29 +79,73 @@ class GameModeFilterBar extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // License Chip / Dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A2A),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade800),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      selectedLicense,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2A2A2A),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade800),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          selectedLicense,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    ),
-                    if (onLicenseSelected != null) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 18),
+                      if (onLicenseSelected != null) ...[
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 18),
+                      ],
                     ],
-                  ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Rules Book button
+              InkWell(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => const ResidentEvilRulesBottomSheet(),
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE53935).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFE53935).withValues(alpha: 0.6),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.menu_book, color: Color(0xFFE53935), size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'RÈGLES',
+                        style: TextStyle(
+                          color: Color(0xFFE53935),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

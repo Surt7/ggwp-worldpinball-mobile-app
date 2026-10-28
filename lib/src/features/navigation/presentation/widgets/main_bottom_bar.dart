@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../auth/presentation/widgets/logout_dialog.dart';
-import '../../../qr_code/presentation/qr_pass_screen.dart';
+import '../../../qr_code/presentation/join_game_bottom_sheet.dart';
 import '../../../settings/presentation/settings_bottom_sheet.dart';
 
 /// Reusable arcade-themed bottom navigation bar for World Pinball.
@@ -28,7 +28,8 @@ class MainBottomBar extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    builder: (context) => const QrPassScreen(),
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const JoinGameBottomSheet(),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -39,13 +40,13 @@ class MainBottomBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                icon: const Icon(Icons.qr_code_2, size: 28),
+                icon: const Icon(Icons.qr_code_scanner, size: 26),
                 label: const Text(
-                  'SCAN PASS (QR CODE)',
+                  'REJOINDRE UNE PARTIE (QR CODE)',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+                    letterSpacing: 1.0,
                   ),
                 ),
               ),
