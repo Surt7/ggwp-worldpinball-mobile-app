@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'leaderboard_card.dart';
-import '../../data/leaderboard_repository.dart';
+import '../data/leaderboard_repository.dart';
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});

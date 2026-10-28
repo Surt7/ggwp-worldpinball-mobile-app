@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../../shared/config/api_config.dart';
+import '../../../shared/config/api_config.dart';
 
 class LeaderboardRepository {
   Future<List<Map<String, dynamic>>> getLeaderboard() async {

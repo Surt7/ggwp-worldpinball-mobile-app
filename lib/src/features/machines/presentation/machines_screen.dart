@@ -4,6 +4,7 @@ import '../bloc/machines_bloc.dart';
 import '../bloc/machines_event.dart';
 import '../bloc/machines_state.dart';
 import 'machine_card.dart';
+import 'widgets/claim_machine_bottom_sheet.dart';
 
 /// Screen responsible for displaying the list of user-owned machines.
 /// Option A: User -> Device -> Machine
@@ -67,19 +68,29 @@ class MachinesScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFE53935),
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
+                        onPressed: () => showClaimMachineBottomSheet(context),
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        label: const Text(
+                          'ASSOCIER UN FLIPPER',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton.icon(
                         onPressed: () {
                           context.read<MachinesBloc>().add(LoadMachinesEvent());
                         },
-                        icon: const Icon(Icons.refresh, color: Colors.white),
-                        label: const Text('ACTUALISER', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.refresh, color: Colors.grey, size: 18),
+                        label: const Text('ACTUALISER', style: TextStyle(color: Colors.grey)),
                       ),
                     ],
                   ),
@@ -94,9 +105,65 @@ class MachinesScreen extends StatelessWidget {
             },
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: machines.length,
+              itemCount: machines.length + 1,
               itemBuilder: (context, index) {
-                return MachineCard(machine: machines[index]);
+                if (index == 0) {
+                  return Card(
+                    color: const Color(0xFF1E1E1E),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: const Color(0xFFE53935).withValues(alpha: 0.5)),
+                    ),
+                    child: InkWell(
+                      onTap: () => showClaimMachineBottomSheet(context),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE53935).withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.add_circle_outline,
+                                color: Color(0xFFE53935),
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'ASSOCIER UN FLIPPER',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Code WP-XXXXX ou scan QR code',
+                                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                return MachineCard(machine: machines[index - 1]);
               },
             ),
           );
