@@ -13,6 +13,13 @@ class LeaderboardRepository {
           machine {
             displayName
           }
+          mode {
+            code
+            name
+          }
+          ipLicense {
+            name
+          }
         }
       }
     ''';
@@ -37,6 +44,9 @@ class LeaderboardRepository {
           'rank': index + 1,
           'player': json['userId']?.toString() ?? 'Joueur Anonyme',
           'machine': json['machine']?['displayName']?.toString() ?? 'Flipper WorldPinball',
+          'modeCode': json['mode']?['code']?.toString(),
+          'modeName': json['mode']?['name']?.toString() ?? 'Standard',
+          'licenseName': json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
           'score': _formatScore(json['score']),
         };
       }).toList();

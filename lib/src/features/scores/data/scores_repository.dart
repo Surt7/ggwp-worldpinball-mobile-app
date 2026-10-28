@@ -17,6 +17,13 @@ class ScoresRepository {
           machine {
             displayName
           }
+          mode {
+            code
+            name
+          }
+          ipLicense {
+            name
+          }
         }
       }
     ''';
@@ -44,6 +51,9 @@ class ScoresRepository {
       return scoresJson.map((json) {
         return {
           'machine': json['machine']?['displayName']?.toString() ?? 'Flipper WorldPinball',
+          'modeCode': json['mode']?['code']?.toString(),
+          'modeName': json['mode']?['name']?.toString() ?? 'Standard',
+          'licenseName': json['ipLicense']?['name']?.toString() ?? 'Resident Evil',
           'score': _formatScore(json['score']),
           'date': _formatDate(json['achievedAtUtc']),
         };
