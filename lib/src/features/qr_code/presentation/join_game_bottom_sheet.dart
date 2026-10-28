@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'qr_pass_screen.dart';
+import 'widgets/camera_scanner_dialog.dart';
+import 'widgets/manual_session_code_dialog.dart';
 
-/// Modal bottom sheet presenting the 3 ways to join an arcade pinball session.
+// Modal bottom sheet presenting the 3 ways to join an arcade pinball session
 class JoinGameBottomSheet extends StatelessWidget {
   const JoinGameBottomSheet({super.key});
 
@@ -19,7 +21,7 @@ class JoinGameBottomSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Drag handle
+            // Drag handle indicator
             Center(
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -32,7 +34,7 @@ class JoinGameBottomSheet extends StatelessWidget {
               ),
             ),
 
-            // Header
+            // Header title and close action
             Row(
               children: [
                 Container(
@@ -64,10 +66,7 @@ class JoinGameBottomSheet extends StatelessWidget {
                       ),
                       Text(
                         'Connectez votre profil joueur au flipper',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
@@ -81,7 +80,7 @@ class JoinGameBottomSheet extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Option 1: Scanner l'écran du flipper avec la caméra
+            // Option 1: Scan cabinet LCD screen with phone camera
             _buildOptionCard(
               context: context,
               icon: Icons.qr_code_scanner,
@@ -92,13 +91,16 @@ class JoinGameBottomSheet extends StatelessWidget {
                   'Pointez l\'appareil photo de votre téléphone vers le QR Code affiché sur l\'écran LCD du flipper.',
               onTap: () {
                 Navigator.pop(context);
-                _showCameraScannerDialog(context);
+                showDialog(
+                  context: context,
+                  builder: (_) => const CameraScannerDialog(),
+                );
               },
             ),
 
             const SizedBox(height: 12),
 
-            // Option 2: Saisie manuelle du code de session (support 24h)
+            // Option 2: Enter session or cabinet code manually
             _buildOptionCard(
               context: context,
               icon: Icons.pin,
@@ -109,13 +111,16 @@ class JoinGameBottomSheet extends StatelessWidget {
                   'Entrez le code à 6 chiffres affiché sur le flipper ou photographié lors de votre partie.',
               onTap: () {
                 Navigator.pop(context);
-                _showManualCodeDialog(context);
+                showDialog(
+                  context: context,
+                  builder: (_) => const ManualSessionCodeDialog(),
+                );
               },
             ),
 
             const SizedBox(height: 12),
 
-            // Option 3: Mon Pass Joueur (conservé pour flippers équipés de caméra)
+            // Option 3: Optical Player Pass (retained for cabinets with built-in cameras)
             _buildOptionCard(
               context: context,
               icon: Icons.qr_code_2,
@@ -129,7 +134,7 @@ class JoinGameBottomSheet extends StatelessWidget {
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  builder: (context) => const QrPassScreen(),
+                  builder: (_) => const QrPassScreen(),
                 );
               },
             ),
@@ -139,6 +144,7 @@ class JoinGameBottomSheet extends StatelessWidget {
     );
   }
 
+  // Helper builder for arcade-themed action cards
   Widget _buildOptionCard({
     required BuildContext context,
     required IconData icon,
@@ -192,7 +198,9 @@ class JoinGameBottomSheet extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: accentColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
@@ -226,198 +234,14 @@ class JoinGameBottomSheet extends StatelessWidget {
             const SizedBox(width: 8),
             const Padding(
               padding: EdgeInsets.only(top: 8.0),
-              child: Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 14),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showCameraScannerDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFE53935)),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.camera_alt, color: Color(0xFFE53935)),
-            SizedBox(width: 10),
-            Text(
-              'SCANNER CAMÉRA',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              child: Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey,
+                size: 14,
               ),
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 180,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade800),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(
-                    Icons.qr_code_scanner,
-                    size: 96,
-                    color: Color(0xFFE53935),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.7),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'Visez le QR Code du flipper',
-                        style: TextStyle(color: Colors.white70, fontSize: 11),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'Pointez votre objectif vers le QR Code affiché sur le flipper.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('ANNULER', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFE53935),
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Partie rejointe avec succès ! Bienvenue au flipper.'),
-                  backgroundColor: Color(0xFF2E7D32),
-                ),
-              );
-            },
-            child: const Text('SIMULER LE SCAN'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showManualCodeDialog(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFF00E5FF)),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.pin, color: Color(0xFF00E5FF)),
-            SizedBox(width: 10),
-            Text(
-              'CODE DE PARTIE',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Saisissez le code à 6 caractères de la partie (valide 24h après votre partie) :',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              textCapitalization: TextCapitalization.characters,
-              maxLength: 8,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                letterSpacing: 4,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-              decoration: InputDecoration(
-                counterText: '',
-                hintText: 'EX: WP-7842',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 16,
-                  letterSpacing: 2,
-                ),
-                filled: true,
-                fillColor: const Color(0xFF2A2A2A),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFF00E5FF)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 2),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('ANNULER', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00E5FF),
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () {
-              final code = controller.text.trim();
-              if (code.isEmpty) return;
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Partie $code enregistrée avec succès !'),
-                  backgroundColor: const Color(0xFF2E7D32),
-                ),
-              );
-            },
-            child: const Text('VALIDER LE CODE', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
   }
