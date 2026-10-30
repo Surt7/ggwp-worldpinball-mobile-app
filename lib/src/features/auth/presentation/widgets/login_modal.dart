@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/auth_repository.dart';
+import 'auth_text_field.dart';
+import 'forgot_password_dialog.dart';
 
 class LoginModal extends StatefulWidget {
   final VoidCallback? onLoginSuccess;
@@ -63,6 +65,13 @@ class _LoginModalState extends State<LoginModal> {
     }
   }
 
+  void _openForgotPassword() {
+    showDialog(
+      context: context,
+      builder: (_) => const ForgotPasswordDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -122,45 +131,62 @@ class _LoginModalState extends State<LoginModal> {
               ),
               const SizedBox(height: 16),
             ],
-            TextFormField(
+            AuthTextField(
               controller: _usernameController,
-              decoration: const InputDecoration(
-                labelText: 'Identifiant ou Email',
-                prefixIcon: Icon(Icons.person, color: Colors.grey),
-                border: OutlineInputBorder(),
-              ),
+              labelText: 'Identifiant ou Email',
+              prefixIcon: Icons.person_outline,
+              textInputAction: TextInputAction.next,
               validator: (val) => (val == null || val.trim().isEmpty)
                   ? 'Veuillez saisir votre identifiant'
                   : null,
             ),
-            const SizedBox(height: 16),
-            TextFormField(
+            const SizedBox(height: 14),
+            AuthTextField(
               controller: _passwordController,
+              labelText: 'Mot de passe',
+              prefixIcon: Icons.lock_outline,
               obscureText: _obscurePassword,
-              decoration: InputDecoration(
-                labelText: 'Mot de passe',
-                prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _handleLogin(),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                  size: 20,
                 ),
-                border: const OutlineInputBorder(),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
               ),
               validator: (val) => (val == null || val.isEmpty)
                   ? 'Veuillez saisir votre mot de passe'
                   : null,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                ),
+                onPressed: _openForgotPassword,
+                child: const Text(
+                  'Mot de passe oublié ?',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: _isLoading ? null : _handleLogin,
@@ -179,6 +205,7 @@ class _LoginModalState extends State<LoginModal> {
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Colors.white,
+                        letterSpacing: 1.1,
                       ),
                     ),
             ),
