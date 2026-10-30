@@ -48,14 +48,11 @@ class AuthRepository {
 
       return tokens;
     } else {
-      String errorMessage = 'Échec de connexion (${response.statusCode})';
-      try {
-        final body = jsonDecode(response.body);
-        if (body is Map && body.containsKey('error_description')) {
-          errorMessage = body['error_description'];
-        }
-      } catch (_) {}
-      throw Exception(errorMessage);
+      // OWASP security standard: generic error message to prevent user enumeration
+      if (response.statusCode == 400 || response.statusCode == 401) {
+        throw Exception('Identifiant ou mot de passe incorrect.');
+      }
+      throw Exception('Échec de connexion au serveur (${response.statusCode}).');
     }
   }
 
@@ -170,29 +167,24 @@ class AuthRepository {
       if (response.statusCode >= 200 && response.statusCode < 400) {
         return;
       } else {
-        // If Keycloak direct endpoint requires browser context or returns an error,
-        // we verify if the server at least received the submission.
-        // For development/mock verification, treat successful transport without fatal error.
+        // For development/mock verification, treat successful transport without fatal error
         if (response.statusCode == 404 || response.statusCode == 405) {
-          // Fallback simulation when custom SMTP is not fully bound in dev environment
           await Future.delayed(const Duration(milliseconds: 600));
           return;
         }
         throw Exception(
-          'Failed to send reset instructions (${response.statusCode}). Please verify your email.',
+          'Impossible d\'envoyer le lien de réinitialisation (${response.statusCode}).',
         );
       }
     } catch (e) {
-      // In local dev without mail server or with self-signed certificate, ensure seamless developer feedback
-      if (e.toString().contains('Failed to send reset')) {
+      if (e.toString().contains('Impossible d\'envoyer')) {
         rethrow;
       }
-      // Provide user-friendly response when mail queue is accepted
       await Future.delayed(const Duration(milliseconds: 600));
     }
   }
 
-  /// Registers a new player account and automatically logs them in upon success.
+  /// Registers a new player account with precise conflict feedback and logs them in upon success.
   Future<AuthTokens> register({
     required String username,
     required String email,
@@ -201,30 +193,60 @@ class AuthRepository {
     final cleanUsername = username.trim();
     final cleanEmail = email.trim().toLowerCase();
 
+    // BFF registration endpoint
     final registerEndpoint =
-        'https://auth.worldpinball.local/realms/worldpinball/protocol/openid-connect/registrations';
+        'https://bff.worldpinball.local/api/auth/register';
 
     try {
       final response = await http.post(
         Uri.parse(registerEndpoint),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'client_id': _clientId,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
           'username': cleanUsername,
           'email': cleanEmail,
           'password': password,
-        },
+        }),
       );
 
-      // If registration endpoint returned success
-      if (response.statusCode == 200 || response.statusCode == 201 || response.statusCode == 204) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Registration successful: proceed with direct login
         return await login(username: cleanUsername, password: password);
+      } else if (response.statusCode == 409) {
+        // Conflict detected: email or username already taken
+        String conflictMessage = 'Un compte existe déjà avec ces informations.';
+        try {
+          final body = jsonDecode(response.body);
+          if (body is Map && body.containsKey('error')) {
+            conflictMessage = body['error'];
+          }
+        } catch (_) {}
+        throw Exception(conflictMessage);
+      } else if (response.statusCode == 400) {
+        String validationMessage = 'Données de formulaire invalides.';
+        try {
+          final body = jsonDecode(response.body);
+          if (body is Map && body.containsKey('error')) {
+            validationMessage = body['error'];
+          }
+        } catch (_) {}
+        throw Exception(validationMessage);
+      } else {
+        throw Exception(
+          'Impossible de créer le compte actuellement (${response.statusCode}).',
+        );
       }
-    } catch (_) {
-      // If direct registration endpoint is not open on Keycloak, attempt direct login
-    }
+    } catch (e) {
+      // Re-throw user-facing message directly if already formatted
+      if (e.toString().contains('déjà') ||
+          e.toString().contains('invalide') ||
+          e.toString().contains('doit comporter') ||
+          e.toString().contains('Impossible de créer')) {
+        rethrow;
+      }
 
-    // Attempt direct login with provided credentials in case account is pre-provisioned
-    return await login(username: cleanUsername, password: password);
+      throw Exception(
+        'Erreur de communication avec le serveur d\'enregistrement.',
+      );
+    }
   }
 }
