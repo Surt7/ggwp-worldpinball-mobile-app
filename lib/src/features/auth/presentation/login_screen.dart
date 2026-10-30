@@ -18,8 +18,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController(text: 'player1');
-  final _passwordController = TextEditingController(text: 'Player123!');
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _authRepository = AuthRepository();
 
   bool _isLoading = false;
